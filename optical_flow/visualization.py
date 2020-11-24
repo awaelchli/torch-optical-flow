@@ -228,28 +228,37 @@ def flow_uv_to_colors(uv: Tensor):
     Returns:
         np.ndarray: Flow visualization image of shape [H,W,3]
     """
-    # uv: (H, W, 2)
-    u, v = uv[:, :, 0], uv[:, :, 1]
-    colorwheel = make_colorwheel()  # shape [55x3]
+    # uv: (B, H, W, 2)
+    b, h, w, _ = uv.shape
+    u, v = uv[..., 0], uv[..., 1]
+    colorwheel = make_colorwheel()  # (55, 3)
     ncols = colorwheel.shape[0]
-    rad = torch.sqrt(torch.square(u) + torch.square(v))
-    a = torch.atan2(-v, -u) / np.pi
-    fk = (a + 1) / 2 * (ncols - 1)
-    k0 = torch.floor(fk).long()
+    rad = torch.sqrt(torch.square(u) + torch.square(v))  # (B, H, W)
+    a = torch.atan2(-v, -u) / np.pi  # (B, H, W)
+    fk = (a + 1) / 2 * (ncols - 1)  # (B, H, W)
+    k0 = torch.floor(fk).long()  # (B, H, W)
     k1 = k0 + 1
     k1[k1 == ncols] = 0
-    f = fk - k0
-    f = f.unsqueeze(2).repeat(1, 1, 3)
+    f = fk - k0  # (B, H, W)
+    f = f.view(-1, 1).expand(-1, 3)
+    #f = f.unsqueeze(2).repeat(1, 1, 3)
 
-    col0 = colorwheel[k0] / 255.0
-    col1 = colorwheel[k1] / 255.0
+    col0 = colorwheel[k0.view(-1), :] / 255.0
+    col1 = colorwheel[k1.view(-1), :] / 255.0
+    print(colorwheel.shape)
+    print(k0.shape)
+    print(col0.shape)
     col = (1 - f) * col0 + f * col1
     idx = rad <= 1
-    idx = idx.unsqueeze(2).repeat(1, 1, 3)
-    rad = rad.unsqueeze(2).repeat(1, 1, 3)
+    idx = idx.view(-1, 1).expand(-1, 3)
+    rad = rad.view(-1, 1).expand(-1, 3)
     col[idx] = 1 - rad[idx] * (1 - col[idx])
     col[~idx] = col[~idx] * 0.75  # out of range
     flow_image = torch.floor(255 * col).type(torch.uint8)
+
+    # (BHW, 3) -> (3, BHW) -> (3, B, H, W) -> (B, 3, H, W)
+    flow_image = flow_image.permute(1, 0).view(3, b, h, w).permute(1, 0, 2, 3)
+    # flow_image = flow_image.view(b, 3, h, w)
     return flow_image
 
 
@@ -310,11 +319,14 @@ def main():
     y = np.arctan2(a.numpy(), b.numpy())
     assert np.allclose(x.numpy(), y)
 
-    uv = torch.rand(2, 100, 100, 2) * 100
+    uv = torch.rand(1, 5, 6, 2) * 100
+    uv = uv.repeat(2, 1, 1, 1)
 
     y = flow_uv_to_colors_numpy(uv[0, :, :, 0].numpy(), uv[0, :, :, 1].numpy())
-    x = flow_uv_to_colors(uv[0])
-    assert np.allclose(x.numpy(), y)
+    x = flow_uv_to_colors(uv)
+    print(x[0].max(), y.max())
+    assert np.allclose(x[0].permute(1, 2, 0).numpy(), y)
+    assert np.allclose(x[1].permute(1, 2, 0).numpy(), y)
     # print(x.dtype, y.dtype)
 
 
