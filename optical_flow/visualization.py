@@ -45,6 +45,7 @@ def hsv_to_rgb(image: Tensor) -> Tensor:
 
     return out
 
+
 #
 # def flow2rgb(flow: Tensor, max_norm: float = 1.0, invert_y: bool = True) -> Tensor:
 #     """
@@ -131,6 +132,8 @@ def make_colorwheel_torch():
     colorwheel[col : col + MR, 2] = 255 - torch.floor(255 * torch.arange(MR) / MR)
     colorwheel[col : col + MR, 0] = 255
     return colorwheel
+
+
 #
 #
 # def make_colorwheel_numpy():
@@ -236,11 +239,11 @@ def flow_uv_to_colors_torch(uv: Tensor):
     colorwheel = make_colorwheel_torch()  # (55, 3)
     ncols = colorwheel.shape[0]
     a = torch.atan2(-v, -u) / np.pi  # (B, H, W)
-    fk = (a + 1) / 2 * (ncols - 1)  # (B, H, W)
-    k0 = torch.floor(fk).long()  # (B, H, W)
+    fk = (a + 1) / 2 * (ncols - 1)
+    k0 = torch.floor(fk).long()
     k1 = k0 + 1
     k1[k1 == ncols] = 0
-    f = fk - k0  # (B, H, W)
+    f = fk - k0
     f = f.view(-1, 1).expand(-1, 3)
 
     col0 = colorwheel[k0.view(-1), :] / 255.0
@@ -277,7 +280,13 @@ def flow_uv_to_colors_torch(uv: Tensor):
 #     return flow_uv_to_colors_torch(flow_uv)
 
 
-def flow2rgb(flow: Tensor, method: str = "baker", clip: float = None, max_norm: float = None, invert_y: bool = True) -> Tensor:
+def flow2rgb(
+    flow: Tensor,
+    method: str = "baker",
+    clip: float = None,
+    max_norm: float = None,
+    invert_y: bool = True,
+) -> Tensor:
     if clip is not None:
         flow = torch.clip(flow, -clip, clip)
     max_norm = max_norm or torch.max(torch.norm(flow, p=2, dim=1))
@@ -294,6 +303,7 @@ def flow2rgb(flow: Tensor, method: str = "baker", clip: float = None, max_norm: 
         raise ValueError(f"Unknown method '{method}'.")
 
     return rgb
+
 
 #
 #
@@ -344,7 +354,6 @@ def main():
     assert np.allclose(x[0].permute(1, 2, 0).numpy(), y)
     assert np.allclose(x[1].permute(1, 2, 0).numpy(), y)
     # print(x.dtype, y.dtype)
-
 
 
 if __name__ == "__main__":
