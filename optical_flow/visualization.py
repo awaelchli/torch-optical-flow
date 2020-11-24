@@ -205,7 +205,7 @@ def flow_uv_to_colors_numpy(u, v, convert_to_bgr=False):
         tmp = colorwheel[:, i]
         col0 = tmp[k0] / 255.0
         col1 = tmp[k1] / 255.0
-        print(tmp.shape, k0.shape)
+        print(f.shape, col0.shape, col1.shape)
         col = (1 - f) * col0 + f * col1
         idx = rad <= 1
         col[idx] = 1 - rad[idx] * (1 - col[idx])
@@ -228,24 +228,20 @@ def flow_uv_to_colors(uv: Tensor):
     Returns:
         np.ndarray: Flow visualization image of shape [H,W,3]
     """
-    # uv: (B, H, W, 2)
-    u, v = uv[..., 0:1], uv[..., 1:2]  # (B, H, W)
-    colorwheel = make_colorwheel().unsqueeze(0).expand(uv.shape[0], -1, -1)  # (B, 55, 3)
-    ncols = colorwheel.shape[1]  # 55
-    rad = torch.norm(uv, p=2, dim=-3, keepdim=True)  # (B, H, W, 1)
-    a = torch.atan2(-v, -u) / np.pi  # (B, H, W)
-    a = a.expand(-1, -1, -1, 3)
-    fk = (a + 1) / 2 * (ncols - 1)  # (B, H, W)
-    k0 = torch.floor(fk).long()  # (B, H, W)
+    # uv: (H, W, 2)
+    u, v = uv[:, :, 0], uv[:, :, 1]
+    colorwheel = make_colorwheel()  # shape [55x3]
+    ncols = colorwheel.shape[0]
+    rad = torch.sqrt(torch.square(u) + torch.square(v))
+    a = torch.atan2(-v, -u) / np.pi
+    fk = (a + 1) / 2 * (ncols - 1)
+    k0 = torch.floor(fk).long()
     k1 = k0 + 1
     k1[k1 == ncols] = 0
-    f = fk - k0  # (B, H, W)
-
-    print(k0.shape)
+    f = fk - k0
+    f = f.unsqueeze(2).repeat(1, 1, 3)
 
     col0 = colorwheel[k0] / 255.0
-
-    print(col0.shape)
     col1 = colorwheel[k1] / 255.0
     col = (1 - f) * col0 + f * col1
     idx = rad <= 1
@@ -317,8 +313,8 @@ def main():
     uv = torch.rand(2, 100, 100, 2) * 100
 
     y = flow_uv_to_colors_numpy(uv[0, :, :, 0].numpy(), uv[0, :, :, 1].numpy())
-    x = flow_uv_to_colors(uv)
-    assert np.allclose(x.numpy()[0], y)
+    x = flow_uv_to_colors(uv[0])
+    assert np.allclose(x.numpy(), y)
     # print(x.dtype, y.dtype)
 
 
