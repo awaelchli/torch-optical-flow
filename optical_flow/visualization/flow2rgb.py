@@ -5,7 +5,6 @@ import torch
 from torch import Tensor
 
 from optical_flow.visualization.methods import (
-    colorwheel_baker,
     flow2rgb_baker,
     flow2rgb_hsv,
 )
@@ -18,7 +17,7 @@ def flow2rgb(
     method: str = "baker",
     clip: float = None,
     max_norm: float = None,
-    invert_y: bool = True,
+    invert_y: bool = False,
 ) -> Tensor:
     """
     Args:
@@ -42,7 +41,7 @@ def flow2rgb(
         flow = flow.clone()
         flow[:, 1] *= -1
 
-    max_norm = max_norm or torch.max(torch.norm(flow, p=2, dim=1))
+    max_norm = max_norm or torch.max(torch.norm(flow.flatten(2), p=2, dim=1), dim=1)[0].view(flow.shape[0], 1, 1, 1)
     flow = flow / (max_norm + EPS)
 
     if method == "baker":
@@ -56,36 +55,3 @@ def flow2rgb(
         raise ValueError(f"Unknown method '{method}'.")
 
     return rgb
-
-
-def main():
-    from flow_vis.flow_vis import flow_to_color, make_colorwheel
-
-    dev = torch.device("cuda", 0) if torch.cuda.is_available() else torch.device("cpu")
-
-    x = make_colorwheel()
-    y = colorwheel_baker()
-    assert np.allclose(x, y.numpy())
-
-    a = torch.randn(4)
-    b = torch.randn(4)
-    x = torch.atan2(a, b)
-    y = np.arctan2(a.numpy(), b.numpy())
-    assert np.allclose(x.numpy(), y)
-
-    uv = torch.rand(1, 2, 5, 6, device=dev) * 100
-    uv = uv.repeat(2, 1, 1, 1)
-
-    y = flow_to_color(uv[0].cpu().permute(1, 2, 0).numpy())
-    x = flow2rgb(uv)
-    assert 0 <= x.min() <= x.max() <= 1
-    # print(x[0].max(), y.max())
-    assert np.allclose(x[0].permute(1, 2, 0).cpu().numpy(), y / 255)
-    assert np.allclose(x[1].permute(1, 2, 0).cpu().numpy(), y / 255)
-    assert x.device == dev
-    assert x.dtype == torch.float
-    # print(x.dtype, y.dtype)
-
-
-if __name__ == "__main__":
-    main()

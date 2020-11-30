@@ -2,3 +2,4 @@
 flow_vis==0.1
 black
 isort
+pytest
