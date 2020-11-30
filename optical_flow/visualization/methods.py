@@ -16,6 +16,7 @@ def colorwheel_baker(device: Optional[torch.device] = None):
         URL: http://vision.middlebury.edu/flow/flowEval-iccv07.pdf
     Code follows the original C++ source code of Daniel Scharstein.
     Code follows the the Matlab source code of Deqing Sun.
+
     Returns:
         np.ndarray: Color wheel
     """
@@ -103,27 +104,27 @@ def flow2rgb_baker(uv: Tensor):
     return flow_image
 
 
-def flow2rgb_hsv(flow: Tensor, max_norm: float = 1.0) -> Tensor:
+def flow2rgb_hsv(flow: Tensor) -> Tensor:
     """
     Map optical flow to color image.
     The color hue is determined by the angle to the X-axis and the norm of the flow determines the saturation.
     White represents zero optical flow.
 
-    :param flow: A torch.Tensor or numpy.ndarray of shape (B, 2, H, W). The components flow[:, 0] and flow[:, 1] are
-    the X- and Y-coordinates of the optical flow, respectively.
-    :param max_norm: The maximum norm of optical flow to be clipped. Default: 1.
-    The optical flows that have a norm greater than max_value will be clipped for visualization.
+    Args:
+        flow: A torch.Tensor or numpy.ndarray of shape (B, 2, H, W). The components flow[:, 0] and flow[:, 1] are
+            the X- and Y-coordinates of the optical flow, respectively.
 
-    :return: Tensor of shape (B, 3, H, W)
+    Returns:
+        Tensor of shape (B, 3, H, W)
     """
     flow = flow.clone()
     flow[:, 1] *= -1
+
     dx, dy = flow[:, 0], flow[:, 1]
     angle = torch.atan2(dy, dx)
     angle = torch.where(angle < 0, 2 * np.pi + angle, angle)
 
-    scale = torch.sqrt(dx ** 2 + dy ** 2) / max_norm
-    print(scale)
+    scale = torch.sqrt(dx ** 2 + dy ** 2)
     h = angle / (2 * np.pi)
     s = torch.clamp(scale, 0, 1)
     v = torch.ones_like(s)
