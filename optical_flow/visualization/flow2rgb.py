@@ -37,7 +37,6 @@ def flow2rgb(
     """
 
     # flow: (B, 2, H, W)
-
     if isinstance(flow, np.ndarray):
         flow = torch.as_tensor(flow)
     ndims = flow.ndimension()
