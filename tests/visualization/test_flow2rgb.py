@@ -45,6 +45,7 @@ def test_flow2rgb_baker_parity(device, clip_flow):
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("shape", [[1, 2, 3, 4], [4, 2, 3, 4], [2, 3, 4]])
 def test_flow2rgb_input_output_shape(method, shape):
+    """ Test that the function accepts both batched- and non-batched input tensors. """
     flow = (torch.rand(*shape) * 2 - 1) * 100
     output = flow2rgb(flow, method=method)
     expected = list(shape)
@@ -53,8 +54,18 @@ def test_flow2rgb_input_output_shape(method, shape):
 
 
 @pytest.mark.parametrize("method", METHODS)
+def test_flow2rgb_numpy_conversion(method):
+    """ Test that the function accepts a numpy array and converts it to a tensor. """
+    flow = np.random.uniform(-100, 100, size=(4, 2, 5, 5))
+    output = flow2rgb(flow, method=method)
+    assert isinstance(output, Tensor)
+    assert list(output.shape) == [4, 3, 5, 5]
+
+
+@pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("clip", [1.0, 50.0])
 def test_flow2rgb_clip(method, clip):
+    """ Test that flow values get clipped to the correct values. """
     flow = (torch.rand(4, 2, 5, 6) * 2 - 1) * 100
     flow_clipped = torch.clip(flow, -clip, clip)
     output0 = flow2rgb(flow, method=method, clip=clip)
@@ -65,6 +76,7 @@ def test_flow2rgb_clip(method, clip):
 
 @pytest.mark.parametrize("method", METHODS)
 def test_flow2rgb_invert_y(method):
+    """ Test that the Y axis can be inverted. """
     flow = torch.rand(4, 2, 5, 6)
     flow_inverted = flow.clone()
     flow_inverted[:, 1] *= -1
