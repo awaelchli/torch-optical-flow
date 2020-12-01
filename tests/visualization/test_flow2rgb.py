@@ -44,7 +44,7 @@ def test_flow2rgb_baker_parity(device, clip_flow):
 
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("shape", [[1, 2, 3, 4], [4, 2, 3, 4], [2, 3, 4]])
-def test_flow2rgb_input_shape(method, shape):
+def test_flow2rgb_input_output_shape(method, shape):
     flow = (torch.rand(*shape) * 2 - 1) * 100
     output = flow2rgb(flow, method=method)
     expected = list(shape)
