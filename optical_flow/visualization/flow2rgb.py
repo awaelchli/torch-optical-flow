@@ -35,8 +35,12 @@ def flow2rgb(
     """
 
     # flow: (B, 2, H, W)
+
     if isinstance(flow, np.ndarray):
         flow = torch.as_tensor(flow)
+    ndims = flow.ndimension()
+    if ndims == 3:
+        flow = flow.unsqueeze(0)
     if clip is not None:
         clip = (-clip, clip) if not isinstance(clip, tuple) else clip
         flow = torch.clip(flow, clip[0], clip[1])
@@ -50,12 +54,12 @@ def flow2rgb(
 
     if method == "baker":
         rgb = flow2rgb_baker(flow)
-
     elif method == "hsv":
-        # todo: invert y properly handle defaults
         rgb = flow2rgb_hsv(flow)
-
     else:
         raise ValueError(f"Unknown method '{method}'.")
 
+    if ndims == 3:
+        rgb = rgb.view(*rgb.shape[-3:])
     return rgb
+

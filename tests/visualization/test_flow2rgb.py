@@ -43,9 +43,18 @@ def test_flow2rgb_baker_parity(device, clip_flow):
 
 
 @pytest.mark.parametrize("method", METHODS)
+@pytest.mark.parametrize("shape", [[1, 2, 3, 4], [4, 2, 3, 4], [2, 3, 4]])
+def test_flow2rgb_input_shape(method, shape):
+    flow = (torch.rand(*shape) * 2 - 1) * 100
+    output = flow2rgb(flow, method=method)
+    expected = list(shape)
+    expected[-3] = 3  # rgb
+    assert list(output.shape) == expected
+
+
+@pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("clip", [1.0, 50.0])
 def test_flow2rgb_clip(method, clip):
-    """ Test parity with flow-vis library (Baker visualization) """
     flow = (torch.rand(4, 2, 5, 6) * 2 - 1) * 100
     flow_clipped = torch.clip(flow, -clip, clip)
     output0 = flow2rgb(flow, method=method, clip=clip)
@@ -62,3 +71,8 @@ def test_flow2rgb_invert_y(method):
     output = flow2rgb(flow, invert_y=False)
     output_inverted = flow2rgb(flow_inverted, invert_y=True)
     assert torch.allclose(output, output_inverted)
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_flow2rgb_max_norm(method):
+    assert False
