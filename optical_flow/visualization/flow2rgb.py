@@ -1,7 +1,9 @@
+from pathlib import Path
 from typing import Optional, Tuple, Union
 
 import numpy as np
 import torch
+from PIL import Image
 from torch import Tensor
 
 from optical_flow.visualization.methods import flow2rgb_baker, flow2rgb_hsv
@@ -63,3 +65,25 @@ def flow2rgb(
         rgb = rgb.view(*rgb.shape[-3:])
     return rgb
 
+
+def colorwheel(
+    method: str = "baker", size: int = 256, file: Optional[Union[str, Path]] = None
+):
+    h = w = size
+    max_norm = size / 2
+    dy, dx = torch.meshgrid(
+        torch.linspace(-h / 2, h / 2, h), torch.linspace(-w / 2, w / 2, w)
+    )
+    flow = torch.stack((dx, dy))
+    norm = torch.norm(flow, dim=0, keepdim=True)
+    rgb = flow2rgb(flow, method=method, max_norm=max_norm, invert_y=True)
+    mask = torch.le(norm, max_norm)
+    # white background
+    rgb = mask * rgb + ~mask * torch.ones_like(rgb)
+
+    if file is not None:
+        rgb_numpy = rgb.mul(255).permute(1, 2, 0).type(torch.uint8).numpy()
+        im = Image.fromarray(rgb_numpy, "RGB")
+        im.save(file)
+
+    return rgb
