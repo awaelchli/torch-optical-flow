@@ -132,3 +132,27 @@ def flow2rgb_hsv(flow: Tensor) -> Tensor:
     hsv = torch.stack((h, s, v), 1)
     rgb = hsv_to_rgb(hsv)
     return rgb
+
+
+def flow2rgb_meister(flow):
+    """Converts flow to 3-channel color image.
+
+    Code adapted from Simon Meister et al.
+    UnFlow: Unsupervised Learning of Optical Flow with a Bidirectional Census Loss (AAAI 2018)
+    https://github.com/simonmeister/UnFlow
+
+    Args:
+        flow: tensor of shape (B, 2, H, W)
+    """
+    n = 8
+    flow_u, flow_v = flow[:, 0], flow[:, 1]
+    mag = torch.sqrt(flow_u ** 2 + flow_v ** 2)
+    angle = torch.atan2(flow_v, flow_u)
+    max_flow = torch.max(flow.flatten(1), dim=-1)[0]
+    max_flow = max_flow.view(-1, 1, 1)
+    im_h = torch.remainder(angle / (2 * np.pi) + 1.0, 1.0)
+    im_s = torch.clip(mag * n / max_flow, 0, 1)
+    im_v = torch.clip(n - im_s, 0, 1)
+    im_hsv = torch.stack([im_h, im_s, im_v], 1)
+    im = hsv_to_rgb(im_hsv)
+    return im

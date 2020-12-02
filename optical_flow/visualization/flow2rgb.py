@@ -6,12 +6,14 @@ import torch
 from PIL import Image
 from torch import Tensor
 
-from optical_flow.visualization.methods import flow2rgb_baker, flow2rgb_hsv
+from optical_flow.visualization.methods import (flow2rgb_baker, flow2rgb_hsv,
+                                                flow2rgb_meister)
 
 EPS = 1e-5
 METHODS = [
     "baker",
     "hsv",
+    "meister",
 ]
 
 
@@ -35,7 +37,6 @@ def flow2rgb(
     Returns:
 
     """
-
     # flow: (B, 2, H, W)
     if isinstance(flow, np.ndarray):
         flow = torch.as_tensor(flow)
@@ -57,6 +58,8 @@ def flow2rgb(
         rgb = flow2rgb_baker(flow)
     elif method == "hsv":
         rgb = flow2rgb_hsv(flow)
+    elif method == "meister":
+        rgb = flow2rgb_meister(flow)
     else:
         raise ValueError(f"Unknown method '{method}'.")
 
