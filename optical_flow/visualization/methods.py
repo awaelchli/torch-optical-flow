@@ -122,9 +122,9 @@ def flow2rgb_hsv(flow: Tensor) -> Tensor:
 
     dx, dy = flow[:, 0], flow[:, 1]
     angle = torch.atan2(dy, dx)
-    angle = torch.where(angle < 0, 2 * np.pi + angle, angle)
-
+    angle = torch.where(angle < 0, angle + (2 * np.pi), angle)
     scale = torch.sqrt(dx ** 2 + dy ** 2)
+
     h = angle / (2 * np.pi)
     s = torch.clamp(scale, 0, 1)
     v = torch.ones_like(s)
