@@ -85,6 +85,13 @@ def test_flow2rgb_invert_y(method):
     assert torch.allclose(output, output_inverted)
 
 
+def test_flow2rgb_unknown_method():
+    """ Test an exception is raised with an unknown method as input. """
+    flow = torch.rand(4, 2, 5, 6)
+    with pytest.raises(ValueError, match="Unknown method"):
+        flow2rgb(flow, method="unknown")
+
+
 @pytest.mark.parametrize("method", METHODS)
 def test_flow2rgb_max_norm(method):
     assert False
