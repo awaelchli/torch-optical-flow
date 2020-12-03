@@ -1,4 +1,0 @@
-
-FORMATS = [
-    "middlebury"
-]

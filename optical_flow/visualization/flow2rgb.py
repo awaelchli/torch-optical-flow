@@ -6,8 +6,11 @@ import torch
 from PIL import Image
 from torch import Tensor
 
-from optical_flow.visualization.methods import (flow2rgb_baker, flow2rgb_hsv,
-                                                flow2rgb_meister)
+from optical_flow.visualization.methods import (
+    flow2rgb_baker,
+    flow2rgb_hsv,
+    flow2rgb_meister,
+)
 
 EPS = 1e-5
 METHODS = [
