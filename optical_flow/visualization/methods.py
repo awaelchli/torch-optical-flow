@@ -17,8 +17,11 @@ def colorwheel_baker(device: Optional[torch.device] = None):
     Code follows the original C++ source code of Daniel Scharstein.
     Code follows the the Matlab source code of Deqing Sun.
 
+    Adapted from Tom Runia
+    https://github.com/tomrunia/OpticalFlow_Visualization
+
     Returns:
-        np.ndarray: Color wheel
+        color wheel
     """
 
     RY = 15
@@ -73,6 +76,10 @@ def flow2rgb_baker(uv: Tensor):
     Applies the flow color wheel to (possibly clipped) flow components u and v.
     According to the C++ source code of Daniel Scharstein
     According to the Matlab source code of Deqing Sun
+
+    Adapted from Tom Runia
+    https://github.com/tomrunia/OpticalFlow_Visualization
+
     Args:
         uv: Input horizontal flow of shape [H,W]
     Returns:
