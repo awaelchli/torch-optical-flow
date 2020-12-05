@@ -30,14 +30,14 @@ def read_middleburry(file: Union[str, Path]) -> Tensor:
     return data
 
 
-def write_middlebury(flow: Union[Tensor, np.ndarray], file: Union[str, Path]):
+def write_middlebury(file: Union[str, Path], flow: Union[Tensor, np.ndarray]):
     """
     Write optical flow to file in Middlebury format.
     Original code by Deqing Sun, adapted from Daniel Scharstein.
 
     Args:
-        flow:
         file:
+        flow
     """
     if isinstance(flow, Tensor):
         flow = flow.cpu().numpy()
