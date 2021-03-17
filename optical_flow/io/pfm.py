@@ -9,7 +9,7 @@ from torch import Tensor
 
 
 def read_pfm(file: Union[str, Path]) -> Tensor:
-    """ PFM format used by FlyingThings3D
+    """PFM format used by FlyingThings3D
 
     Code adapted from
     https://github.com/liruoteng/OpticalFlowToolkit/blob/master/lib/pfm.py
@@ -43,7 +43,7 @@ def read_pfm(file: Union[str, Path]) -> Tensor:
 
 
 def write_pfm(file: Union[str, Path], flow: Union[Tensor, np.ndarray]):
-    """ PFM format used by FlyingThings3D
+    """PFM format used by FlyingThings3D
 
     Code adapted from
     https://github.com/liruoteng/OpticalFlowToolkit/blob/master/lib/pfm.py
