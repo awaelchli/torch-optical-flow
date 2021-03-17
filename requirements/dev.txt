@@ -1,5 +1,6 @@
 -r base.txt
 flow_vis==0.1
+opencv-python
 black
 isort
 pytest
