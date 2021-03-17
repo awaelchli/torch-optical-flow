@@ -30,7 +30,7 @@ def _batched_numpy_function(fn: Callable, inp: Tensor, **kwargs):
 @pytest.mark.parametrize("clip_flow", [None, 1.0, 50.0])
 def test_flow2rgb_baker_parity(device, clip_flow):
     """ Test parity with flow-vis library (Baker visualization) """
-    flow = (torch.rand(4, 2, 5, 6, device=device) * 2 - 1) * 100
+    flow = torch.randn(4, 2, 5, 6, device=device) * 100
     expected = _batched_numpy_function(flow_to_color, flow, clip_flow=clip_flow) / 255
     # the reference implemenation only clips the positive flow values
     # hence we need to limit our function to the same range to test parity
@@ -46,7 +46,7 @@ def test_flow2rgb_baker_parity(device, clip_flow):
 @pytest.mark.parametrize("shape", [[1, 2, 3, 4], [4, 2, 3, 4], [2, 3, 4]])
 def test_flow2rgb_input_output_shape(method, shape):
     """ Test that the function accepts both batched- and non-batched input tensors. """
-    flow = (torch.rand(*shape) * 2 - 1) * 100
+    flow = torch.randn(*shape) * 100
     output = flow2rgb(flow, method=method)
     expected = list(shape)
     expected[-3] = 3  # rgb
@@ -66,7 +66,7 @@ def test_flow2rgb_numpy_conversion(method):
 @pytest.mark.parametrize("clip", [1.0, 50.0])
 def test_flow2rgb_clip(method, clip):
     """ Test that flow values get clipped to the correct values. """
-    flow = (torch.rand(4, 2, 5, 6) * 2 - 1) * 100
+    flow = torch.randn(4, 2, 5, 6) * 100
     flow_clipped = torch.clip(flow, -clip, clip)
     output0 = flow2rgb(flow, method=method, clip=clip)
     output1 = flow2rgb(flow_clipped, method=method, clip=None)
@@ -77,7 +77,7 @@ def test_flow2rgb_clip(method, clip):
 @pytest.mark.parametrize("method", METHODS)
 def test_flow2rgb_invert_y(method):
     """ Test that the Y axis can be inverted. """
-    flow = torch.rand(4, 2, 5, 6)
+    flow = torch.randn(4, 2, 5, 6)
     flow_inverted = flow.clone()
     flow_inverted[:, 1] *= -1
     output = flow2rgb(flow, invert_y=False)

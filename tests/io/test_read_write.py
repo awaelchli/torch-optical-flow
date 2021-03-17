@@ -18,7 +18,7 @@ from optical_flow.io.read_write import FORMATS, read, write
     ],
 )
 def test_read_write(tmpdir, format, device):
-    flow = torch.rand(2, 5, 6, device=device)
+    flow = torch.randn(2, 5, 6, device=device) * 100
     write(tmpdir / "test", flow, format=format)
     loaded_flow = read(tmpdir / "test", format=format)
     assert isinstance(loaded_flow, torch.Tensor)
