@@ -6,7 +6,7 @@ import torch
 from flow_vis.flow_vis import flow_to_color
 from torch import Tensor
 
-from optical_flow.visualization.flow2rgb import METHODS, flow2rgb
+from optical_flow.visualization.flow2rgb import flow2rgb, METHODS
 
 
 def _batched_numpy_function(fn: Callable, inp: Tensor, **kwargs):
