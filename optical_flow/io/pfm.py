@@ -42,7 +42,7 @@ def read_pfm(file: Union[str, Path]) -> Tensor:
     return data
 
 
-def write_pfm(file: Union[str, Path], flow: Union[Tensor, np.ndarray]):
+def write_pfm(file: Union[str, Path], flow: Union[Tensor, np.ndarray]) -> None:
     """PFM format used by FlyingThings3D
 
     Code adapted from

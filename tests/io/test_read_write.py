@@ -1,10 +1,12 @@
+from pathlib import Path
+
 import pytest
 import torch
 
 from optical_flow.io.read_write import FORMATS, read, write
 
 
-@pytest.mark.parametrize("format", FORMATS)
+@pytest.mark.parametrize("fmt", FORMATS)
 @pytest.mark.parametrize(
     "device",
     [
@@ -17,12 +19,16 @@ from optical_flow.io.read_write import FORMATS, read, write
         ),
     ],
 )
-def test_read_write(tmpdir, format, device):
-    flow = torch.randn(2, 5, 6, device=device) * 100
-    write(tmpdir / "test", flow, format=format)
-    loaded_flow = read(tmpdir / "test", format=format)
+def test_read_write(tmpdir, fmt, device):
+    flow = torch.rand(2, 5, 6, device=device) * 100
+    filename = Path(tmpdir) / "test"
+    if fmt == "kitti":
+        filename = filename.with_suffix(".png")
+    write(filename, flow, fmt=fmt)
+    loaded_flow = read(filename, fmt=fmt)
     assert isinstance(loaded_flow, torch.Tensor)
     assert loaded_flow.dtype == torch.float32
     assert loaded_flow.shape == flow.shape
     assert loaded_flow.device == torch.device("cpu")
-    assert torch.allclose(flow, loaded_flow)
+    atol = 1e-1 if fmt == "kitti" else 1e-8
+    assert torch.allclose(flow.cpu(), loaded_flow, atol=atol)

@@ -3,43 +3,48 @@ from typing import Union
 
 from torch import Tensor
 
+from optical_flow.io.kitti import read_kitti, write_kitti
 from optical_flow.io.middlebury import read_middleburry, write_middlebury
 from optical_flow.io.pfm import read_pfm, write_pfm
 
-FORMATS = ["middlebury", "pfm"]
+FORMATS = ["kitti", "middlebury", "pfm"]
 
 
-def read(file: Union[str, Path], format="middlebury") -> Tensor:
+def read(file: Union[str, Path], fmt="middlebury") -> Tensor:
     """Reads the flow map from a file.
 
     Args:
         file:
-        format:
+        fmt:
     """
-    if format == "middlebury":
+    if fmt == "kitti":
+        flow = read_kitti(file)
+    elif fmt == "middlebury":
         flow = read_middleburry(file)
-    elif format == "pfm":
+    elif fmt == "pfm":
         flow = read_pfm(file)
     else:
-        raise ValueError(f"Unknown format {format}.")
+        raise ValueError(f"Unknown format {fmt}.")
     return flow
 
 
-def write(file: Union[str, Path], flow: Tensor, format="middlebury"):
+def write(file: Union[str, Path], flow: Tensor, fmt="middlebury") -> None:
     """Write optical flow to file.
 
     Args:
         flow:
         file:
-        format:
+        fmt:
     """
     flow = flow.cpu()
     assert flow.ndim == 3
     assert flow.shape[0] == 2
 
-    if format == "middlebury":
+    if fmt == "kitti":
+        write_kitti(file, flow)
+    elif fmt == "middlebury":
         write_middlebury(file, flow)
-    elif format == "pfm":
+    elif fmt == "pfm":
         write_pfm(file, flow)
     else:
-        raise ValueError(f"Unknown format {format}")
+        raise ValueError(f"Unknown format {fmt}")
