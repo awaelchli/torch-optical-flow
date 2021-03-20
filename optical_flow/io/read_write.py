@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union
+from typing import Any, Union
 
 from torch import Tensor
 
@@ -10,15 +10,16 @@ from optical_flow.io.pfm import read_pfm, write_pfm
 FORMATS = ["kitti", "middlebury", "pfm"]
 
 
-def read(file: Union[str, Path], fmt="middlebury") -> Tensor:
+def read(file: Union[str, Path], fmt="middlebury", **kwargs: Any) -> Tensor:
     """Reads the flow map from a file.
 
     Args:
         file:
         fmt:
+        kwargs: Additional arguments specific to the chosen loading format
     """
     if fmt == "kitti":
-        flow = read_kitti(file)
+        flow = read_kitti(file, **kwargs)
     elif fmt == "middlebury":
         flow = read_middleburry(file)
     elif fmt == "pfm":
