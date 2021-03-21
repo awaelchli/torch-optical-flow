@@ -13,6 +13,7 @@ from torch.utils.data import Dataset
 
 class OpticalFlowDataset(Dataset, ABC):
     def __init__(self):
+        super().__init__()
         self._has_init_seed = False
 
     @abstractmethod
@@ -70,7 +71,8 @@ class OpticalFlowDataset(Dataset, ABC):
 
         if valid is None:
             valid = (flow[0].abs() < 1000) & (flow[1].abs() < 1000)
-        valid = valid.unsqueeze(0).float()
+            valid = valid.unsqueeze(0)
+        valid = valid.float()
 
         return img1, img2, flow, valid
 

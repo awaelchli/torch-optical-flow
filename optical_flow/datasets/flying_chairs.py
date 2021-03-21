@@ -12,7 +12,7 @@ TRAIN_VAL_SPLIT_FILE = Path(__file__).parent / "chairs_split.txt"
 
 class FlyingChairs(OpticalFlowDataset):
     def __init__(self, root: Union[str, Path], split="training"):
-        super(FlyingChairs, self).__init__()
+        super().__init__()
         self.split = split
         self._flow_list = sorted(Path(root).glob("*.flo"))
         self._image_list = []

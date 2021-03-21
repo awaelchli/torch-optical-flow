@@ -28,6 +28,7 @@ def read_kitti(
     flow, valid = flow[:, :, :2], flow[:, :, 2]
     flow = (flow - 2 ** 15) / 64.0
     flow = torch.tensor(flow).permute(2, 0, 1)
+    valid = torch.tensor(valid).unsqueeze(0)
     if return_mask:
         return flow, valid
     return flow
