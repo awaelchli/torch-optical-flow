@@ -7,7 +7,7 @@ from torch import Tensor
 import optical_flow
 from optical_flow.datasets.base import OpticalFlowDataset
 
-TRAIN_VAL_SPLIT_FILE = Path(__file__).parent / "chairs_split.txt"
+TRAIN_VAL_SPLIT_FILE = Path(__file__).parent / "split_files" / "chairs_split.txt"
 
 
 class FlyingChairs(OpticalFlowDataset):
