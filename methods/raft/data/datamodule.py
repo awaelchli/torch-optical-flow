@@ -12,10 +12,10 @@ class RAFTDataModule(LightningDataModule):
         batch_size: int = 6,
         num_workers: int = 4,
         root_chairs: str = "datasets/FlyingChairs_release/data",
-        root_things: str = "",
-        root_sintel: str = "",
-        root_kitti: str = "",
-        root_hd1k: str = "",
+        root_things: str = "datasets/FlyingThings3D",
+        root_sintel: str = "datasets/Sintel",
+        root_kitti: str = "datasets/KITTI",
+        root_hd1k: str = "datasets/HD1k",
     ):
         super().__init__()
         self.stage = stage
