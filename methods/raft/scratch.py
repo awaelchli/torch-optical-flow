@@ -1,5 +1,4 @@
-
-import torch 
+import torch
 
 from model import RAFT
 

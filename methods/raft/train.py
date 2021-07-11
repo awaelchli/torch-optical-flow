@@ -23,9 +23,9 @@ def main():
     seed_everything(1234)
     parser = ArgumentParser()
     parser = Trainer.add_argparse_args(parser)
-    parser.add_argument('--name', default='raft', help="name your experiment")
-    parser.add_argument('--restore_ckpt', help="restore checkpoint")
-    parser.add_argument('--validation', type=str, nargs='+')
+    parser.add_argument("--name", default="raft", help="name your experiment")
+    parser.add_argument("--restore_ckpt", help="restore checkpoint")
+    parser.add_argument("--validation", type=str, nargs="+")
 
     parser.set_defaults(
         max_steps=100000,
@@ -33,18 +33,19 @@ def main():
         validate_every_n_steps=5000,
     )
     args = parser.parse_args()
-    
+
     model = RAFT()
     datamodule = RAFTDataModule()
 
     if args.restore_ckpt is not None:
         model.load_state_dict(torch.load(args.restore_ckpt), strict=False)
 
-    if datamodule.stage != 'chairs':
+    if datamodule.stage != "chairs":
         model.freeze_bn()
 
     trainer = Trainer.from_argparse_args(args)
     # trainer.fit(model)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
