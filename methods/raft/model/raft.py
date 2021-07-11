@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.optim import AdamW
+from torch.optim.lr_scheduler import OneCycleLR
 from pytorch_lightning import LightningModule
 from model.update import BasicUpdateBlock
 from model.extractor import BasicEncoder
@@ -12,11 +14,16 @@ class RAFT(LightningModule):
 
     def __init__(
         self,
-        hidden_dim = 128,
-        context_dim = 128,
-        corr_levels = 4,
-        corr_radius = 4,
-        dropout = 0,
+        hidden_dim: int = 128,
+        context_dim: int = 128,
+        corr_levels: int = 4,
+        corr_radius: int = 4,
+        iters: int = 12,
+        gamma: float = 0.8,
+        dropout: float = 0.0,
+        lr: float = 0.00002, 
+        wdecay: float = 0.00005,
+        epsilon: float = 1e-8,
     ) -> None:
         super().__init__()
         self.save_hyperparameters()
@@ -107,3 +114,64 @@ class RAFT(LightningModule):
             return coords1 - coords0, flow_up
             
         return flow_predictions
+
+    def training_step(self, batch, batch_idx):
+        img0, img1, flow, valid = batch
+        flow_predictions = self(img0, img1, iters=self.hparams.iters)            
+        loss, metrics = sequence_loss(flow_predictions, flow, valid, gamma=self.hparams.gamma)
+        return loss
+
+    def configure_optimizers(self):
+        optimizer = AdamW(
+            self.parameters(), 
+            lr=self.hparams.lr, 
+            weight_decay=self.hparams.wdecay, 
+            eps=self.hparams.epsilon
+        )
+        scheduler = OneCycleLR(
+            optimizer, 
+            self.hparams.lr, 
+            self.trainer.max_steps + 100,
+            pct_start=0.05, 
+            cycle_momentum=False, 
+            anneal_strategy='linear'
+        )
+        configuration = {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "interval": "step",
+            },
+        }
+        return configuration
+
+
+
+
+
+def sequence_loss(flow_preds, flow_gt, valid, gamma=0.8, max_flow=400):
+    """ Loss function defined over sequence of flow predictions """
+
+    n_predictions = len(flow_preds)    
+    flow_loss = 0.0
+
+    # exlude invalid pixels and extremely large diplacements
+    mag = torch.sum(flow_gt**2, dim=1).sqrt()
+    valid = (valid >= 0.5) & (mag < max_flow)
+
+    for i in range(n_predictions):
+        i_weight = gamma**(n_predictions - i - 1)
+        i_loss = (flow_preds[i] - flow_gt).abs()
+        flow_loss += i_weight * (valid[:, None] * i_loss).mean()
+
+    epe = torch.sum((flow_preds[-1] - flow_gt)**2, dim=1).sqrt()
+    epe = epe.view(-1)[valid.view(-1)]
+
+    metrics = {
+        'epe': epe.mean().item(),
+        '1px': (epe < 1).float().mean().item(),
+        '3px': (epe < 3).float().mean().item(),
+        '5px': (epe < 5).float().mean().item(),
+    }
+
+    return flow_loss, metrics
