@@ -1,6 +1,6 @@
 from data.dataset import FlyingChairs, FlyingThings3D, HD1K, KITTI, MpiSintel
 from pytorch_lightning import LightningDataModule
-from torch.utils.data import DataLoader, dataloader
+from torch.utils.data import DataLoader
 
 
 class RAFTDataModule(LightningDataModule):
@@ -125,11 +125,11 @@ class RAFTDataModule(LightningDataModule):
 
     def val_dataloader(self):
         # if self.stage == "chairs":
-        val_dataset = FlyingChairs(split='validation', root=self.root_chairs)
+        val_dataset = FlyingChairs(split="validation", root=self.root_chairs)
         dataloader = DataLoader(
-            val_dataset, 
-            batch_size=1, 
-            shuffle=False, 
+            val_dataset,
+            batch_size=1,
+            shuffle=False,
             num_workers=self.num_workers,
         )
         return dataloader

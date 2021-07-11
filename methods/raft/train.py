@@ -1,33 +1,21 @@
-import argparse
-import os
-import time
-from argparse import ArgumentParser
-
-import cv2
-import matplotlib.pyplot as plt
-import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 from data.datamodule import RAFTDataModule
 from model import RAFT
-from pytorch_lightning import seed_everything, Trainer
-from pytorch_lightning.utilities.cli import LightningCLI
-from pytorch_lightning.core import datamodule
-from torch.utils.data import DataLoader
+from pytorch_lightning import seed_everything
+from pytorch_lightning.utilities.cli import LightningArgumentParser, LightningCLI
 
 
 class RAFTCLI(LightningCLI):
-
-    def add_arguments_to_parser(self, parser):
+    def add_arguments_to_parser(self, parser: LightningArgumentParser) -> None:
         parser.add_argument("--name", default="raft", help="name your experiment")
         parser.add_argument("--restore_ckpt", help="restore checkpoint")
         parser.add_argument("--validation", type=str, nargs="+")
 
-    def before_fit(self):
+    def before_fit(self) -> None:
         if self.config["restore_ckpt"] is not None:
-            self.model.load_state_dict(torch.load(self.config["restore_ckpt"]), strict=False)
+            self.model.load_state_dict(
+                torch.load(self.config["restore_ckpt"]), strict=False
+            )
 
         if self.datamodule.stage != "chairs":
             self.model.freeze_bn()
@@ -47,7 +35,7 @@ def main():
         ),
     )
 
-    #datamodule = RAFTDataModule(root_chairs="/Volumes/Archive/Datasets/FlyingChairs/data")
+    # datamodule = RAFTDataModule(root_chairs="/Volumes/Archive/Datasets/FlyingChairs/data")
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ from model.utils import coords_grid, upflow8
 from pytorch_lightning import LightningModule
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import OneCycleLR
+
 from optical_flow.metrics import AverageEndPointError
 
 
@@ -16,11 +17,11 @@ class RAFT(LightningModule):
         self,
         hidden_dim: int = 128,
         context_dim: int = 128,
+        dropout: float = 0.0,
         corr_levels: int = 4,
         corr_radius: int = 4,
         iters: int = 12,
         gamma: float = 0.8,
-        dropout: float = 0.0,
         lr: float = 0.00002,
         wdecay: float = 0.00005,
         epsilon: float = 1e-8,
@@ -29,11 +30,17 @@ class RAFT(LightningModule):
         self.save_hyperparameters()
 
         # feature network, context network, and update block
-        self.fnet = BasicEncoder(output_dim=256, norm_fn="instance", dropout=dropout)
-        self.cnet = BasicEncoder(
-            output_dim=(hidden_dim + context_dim), norm_fn="batch", dropout=dropout
+        self.fnet = BasicEncoder(
+            output_dim=256, norm_fn="instance", dropout=self.hparams.dropout
         )
-        self.update_block = BasicUpdateBlock(self.hparams, hidden_dim=hidden_dim)
+        self.cnet = BasicEncoder(
+            output_dim=(self.hparams.hidden_dim + self.hparams.context_dim),
+            norm_fn="batch",
+            dropout=self.hparams.dropout,
+        )
+        self.update_block = BasicUpdateBlock(
+            self.hparams, hidden_dim=self.hparams.hidden_dim
+        )
 
         # metrics
         self.epe_train = AverageEndPointError()
@@ -44,56 +51,57 @@ class RAFT(LightningModule):
             if isinstance(m, nn.BatchNorm2d):
                 m.eval()
 
-    def initialize_flow(self, img):
-        """ Flow is represented as difference between two coordinate grids flow = coords1 - coords0"""
-        N, C, H, W = img.shape
-        coords0 = coords_grid(N, H // 8, W // 8).to(img.device)
-        coords1 = coords_grid(N, H // 8, W // 8).to(img.device)
-
+    @staticmethod
+    def initialize_flow(img):
+        """ Flow is represented as difference between two coordinate grids, flow = coords1 - coords0 """
+        n, c, h, w = img.shape
+        coords0 = coords_grid(n, h // 8, w // 8).to(img.device)
+        coords1 = coords_grid(n, h // 8, w // 8).to(img.device)
         # optical flow computed as difference: flow = coords1 - coords0
         return coords0, coords1
 
-    def upsample_flow(self, flow, mask):
+    @staticmethod
+    def upsample_flow(flow, mask):
         """ Upsample flow field [H/8, W/8, 2] -> [H, W, 2] using convex combination """
-        N, _, H, W = flow.shape
-        mask = mask.view(N, 1, 9, 8, 8, H, W)
+        n, _, h, w = flow.shape
+        mask = mask.view(n, 1, 9, 8, 8, h, w)
         mask = torch.softmax(mask, dim=2)
 
         up_flow = F.unfold(8 * flow, [3, 3], padding=1)
-        up_flow = up_flow.view(N, 2, 9, 1, 1, H, W)
+        up_flow = up_flow.view(n, 2, 9, 1, 1, h, w)
 
         up_flow = torch.sum(mask * up_flow, dim=2)
         up_flow = up_flow.permute(0, 1, 4, 2, 5, 3)
-        return up_flow.reshape(N, 2, 8 * H, 8 * W)
+        return up_flow.reshape(n, 2, 8 * h, 8 * w)
 
     def forward(
-        self, image1, image2, iters=12, flow_init=None, upsample=True, test_mode=False
+        self, image0, image1, iters=12, flow_init=None, upsample=True, test_mode=False
     ):
         """ Estimate optical flow between pair of frames """
 
+        image0 = 2 * (image0 / 255.0) - 1.0
         image1 = 2 * (image1 / 255.0) - 1.0
-        image2 = 2 * (image2 / 255.0) - 1.0
 
+        image0 = image0.contiguous()
         image1 = image1.contiguous()
-        image2 = image2.contiguous()
 
         hdim = self.hparams.hidden_dim
         cdim = self.hparams.context_dim
 
         # run the feature network
-        fmap1, fmap2 = self.fnet([image1, image2])
+        fmap1, fmap2 = self.fnet([image0, image1])
 
         fmap1 = fmap1.float()
         fmap2 = fmap2.float()
         corr_fn = CorrBlock(fmap1, fmap2, radius=self.hparams.corr_radius)
 
         # run the context network
-        cnet = self.cnet(image1)
+        cnet = self.cnet(image0)
         net, inp = torch.split(cnet, [hdim, cdim], dim=1)
         net = torch.tanh(net)
         inp = torch.relu(inp)
 
-        coords0, coords1 = self.initialize_flow(image1)
+        coords0, coords1 = self.initialize_flow(image0)
 
         if flow_init is not None:
             coords1 = coords1 + flow_init
@@ -129,7 +137,7 @@ class RAFT(LightningModule):
             flow_predictions, flow, valid, gamma=self.hparams.gamma
         )
         self.epe_train(flow_predictions[-1], flow)
-        
+
         self.log("loss", loss)
         self.log("epe_train", self.epe_train)
         self.log_dict(metrics)
