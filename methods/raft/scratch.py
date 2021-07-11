@@ -1,5 +1,4 @@
 import torch
-
 from model import RAFT
 
 model = RAFT()

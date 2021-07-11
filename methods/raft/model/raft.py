@@ -1,13 +1,13 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from model.corr import CorrBlock
+from model.extractor import BasicEncoder
+from model.update import BasicUpdateBlock
+from model.utils import coords_grid, upflow8
+from pytorch_lightning import LightningModule
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import OneCycleLR
-from pytorch_lightning import LightningModule
-from model.update import BasicUpdateBlock
-from model.extractor import BasicEncoder
-from model.corr import CorrBlock
-from model.utils import coords_grid, upflow8
 
 
 class RAFT(LightningModule):

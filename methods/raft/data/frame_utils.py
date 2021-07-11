@@ -1,9 +1,9 @@
-import numpy as np
-from PIL import Image
-from os.path import *
 import re
+from os.path import *
 
 import cv2
+import numpy as np
+from PIL import Image
 
 cv2.setNumThreads(0)
 cv2.ocl.setUseOpenCL(False)

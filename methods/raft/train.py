@@ -1,22 +1,20 @@
 import argparse
-from data.datamodule import RAFTDataModule
 import os
-import cv2
 import time
-import numpy as np
-import matplotlib.pyplot as plt
-from pytorch_lightning.core import datamodule
+from argparse import ArgumentParser
 
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
-
-from torch.utils.data import DataLoader
-
-from argparse import ArgumentParser
-from pytorch_lightning import Trainer, seed_everything
+import torch.optim as optim
+from data.datamodule import RAFTDataModule
 from model import RAFT
+from pytorch_lightning import seed_everything, Trainer
+from pytorch_lightning.core import datamodule
+from torch.utils.data import DataLoader
 
 
 def main():

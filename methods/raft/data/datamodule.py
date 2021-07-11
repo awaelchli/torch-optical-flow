@@ -1,6 +1,6 @@
+from data.dataset import FlyingChairs, FlyingThings3D, HD1K, KITTI, MpiSintel
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
-from data.dataset import FlyingChairs, FlyingThings3D, MpiSintel, KITTI, HD1K
 
 
 class RAFTDataModule(LightningDataModule):
