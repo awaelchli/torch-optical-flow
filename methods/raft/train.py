@@ -1,9 +1,11 @@
 import argparse
+from data.datamodule import RAFTDataModule
 import os
 import cv2
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+from pytorch_lightning.core import datamodule
 
 import torch
 import torch.nn as nn
@@ -22,11 +24,8 @@ def main():
     parser = ArgumentParser()
     parser = Trainer.add_argparse_args(parser)
     parser.add_argument('--name', default='raft', help="name your experiment")
-    parser.add_argument('--stage', help="determines which dataset to use for training") 
     parser.add_argument('--restore_ckpt', help="restore checkpoint")
     parser.add_argument('--validation', type=str, nargs='+')
-    parser.add_argument('--batch_size', type=int, default=6)
-    parser.add_argument('--image_size', type=int, nargs='+', default=[384, 512])
 
     parser.set_defaults(
         max_steps=100000,
@@ -34,13 +33,14 @@ def main():
         validate_every_n_steps=5000,
     )
     args = parser.parse_args()
-
     
     model = RAFT()
+    datamodule = RAFTDataModule()
+
     if args.restore_ckpt is not None:
         model.load_state_dict(torch.load(args.restore_ckpt), strict=False)
 
-    if args.stage != 'chairs':
+    if datamodule.stage != 'chairs':
         model.freeze_bn()
 
     trainer = Trainer.from_argparse_args(args)
