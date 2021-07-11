@@ -1,6 +1,6 @@
 from data.dataset import FlyingChairs, FlyingThings3D, HD1K, KITTI, MpiSintel
 from pytorch_lightning import LightningDataModule
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, dataloader
 
 
 class RAFTDataModule(LightningDataModule):
@@ -9,6 +9,7 @@ class RAFTDataModule(LightningDataModule):
         stage: str = "chairs",
         image_size: tuple = (384, 512),
         batch_size: int = 6,
+        num_workers: int = 4,
         root_chairs: str = "datasets/FlyingChairs_release/data",
         root_things: str = "",
         root_sintel: str = "",
@@ -19,6 +20,7 @@ class RAFTDataModule(LightningDataModule):
         self.stage = stage
         self.image_size = image_size
         self.batch_size = batch_size
+        self.num_workers = num_workers
         self.root_chairs = root_chairs
         self.root_things = root_things
         self.root_sintel = root_sintel
@@ -110,13 +112,24 @@ class RAFTDataModule(LightningDataModule):
             }
             train_dataset = KITTI(aug_params, split="training", root=self.root_kitti)
 
-        train_loader = DataLoader(
+        dataloader = DataLoader(
             train_dataset,
             batch_size=self.batch_size,
             pin_memory=False,
             shuffle=True,
-            num_workers=4,
+            num_workers=self.num_workers,
             drop_last=True,
         )
 
-        return train_loader
+        return dataloader
+
+    def val_dataloader(self):
+        # if self.stage == "chairs":
+        val_dataset = FlyingChairs(split='validation', root=self.root_chairs)
+        dataloader = DataLoader(
+            val_dataset, 
+            batch_size=1, 
+            shuffle=False, 
+            num_workers=self.num_workers,
+        )
+        return dataloader

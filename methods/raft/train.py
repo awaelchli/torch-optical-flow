@@ -39,7 +39,7 @@ def main():
     cli = RAFTCLI(
         RAFT,
         RAFTDataModule,
-        description="RAFT",
+        description="Lightning RAFT",
         trainer_defaults=dict(
             max_steps=100000,
             gradient_clip_val=1.0,

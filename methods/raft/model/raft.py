@@ -8,6 +8,7 @@ from model.utils import coords_grid, upflow8
 from pytorch_lightning import LightningModule
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import OneCycleLR
+from optical_flow.metrics import AverageEndPointError
 
 
 class RAFT(LightningModule):
@@ -33,6 +34,10 @@ class RAFT(LightningModule):
             output_dim=(hidden_dim + context_dim), norm_fn="batch", dropout=dropout
         )
         self.update_block = BasicUpdateBlock(self.hparams, hidden_dim=hidden_dim)
+
+        # metrics
+        self.epe_train = AverageEndPointError()
+        self.epe_val = AverageEndPointError()
 
     def freeze_bn(self):
         for m in self.modules():
@@ -123,7 +128,19 @@ class RAFT(LightningModule):
         loss, metrics = sequence_loss(
             flow_predictions, flow, valid, gamma=self.hparams.gamma
         )
+        self.epe_train(flow_predictions[-1], flow)
+        
+        self.log("loss", loss)
+        self.log("epe_train", self.epe_train)
+        self.log_dict(metrics)
         return loss
+
+    def validation_step(self, batch, batch_idx):
+        img0, img1, flow_gt, _ = batch
+        _, flow_pr = self(img0, img1, iters=24, test_mode=True)
+
+        self.epe_val(flow_pr, flow_gt)
+        self.log("epe_val", self.epe_val)
 
     def configure_optimizers(self):
         optimizer = AdamW(
