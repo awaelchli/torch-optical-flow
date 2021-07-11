@@ -1,3 +1,4 @@
+import torch
 from data.dataset import FlyingChairs, FlyingThings3D, HD1K, KITTI, MpiSintel
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
@@ -28,7 +29,7 @@ class RAFTDataModule(LightningDataModule):
         self.root_hd1k = root_hd1k
 
     def train_dataloader(self):
-        TRAIN_DS = "C+T+K+S+H"
+        train_ds = "C+T+K+S+H"
 
         if self.stage == "chairs":
             aug_params = {
@@ -73,7 +74,7 @@ class RAFTDataModule(LightningDataModule):
                 aug_params, split="training", dstype="final", root=self.root_sintel
             )
 
-            if TRAIN_DS == "C+T+K+S+H":
+            if train_ds == "C+T+K+S+H":
                 kitti = KITTI(
                     {
                         "crop_size": self.image_size,
@@ -100,7 +101,7 @@ class RAFTDataModule(LightningDataModule):
                     + things
                 )
 
-            elif TRAIN_DS == "C+T+K/S":
+            elif train_ds == "C+T+K/S":
                 train_dataset = 100 * sintel_clean + 100 * sintel_final + things
 
         elif self.stage == "kitti":
@@ -115,21 +116,22 @@ class RAFTDataModule(LightningDataModule):
         dataloader = DataLoader(
             train_dataset,
             batch_size=self.batch_size,
-            pin_memory=False,
             shuffle=True,
-            num_workers=self.num_workers,
             drop_last=True,
+            pin_memory=torch.cuda.is_available(),
+            num_workers=self.num_workers,
         )
 
         return dataloader
 
     def val_dataloader(self):
-        # if self.stage == "chairs":
+        # TODO: validation for other stages
         val_dataset = FlyingChairs(split="validation", root=self.root_chairs)
         dataloader = DataLoader(
             val_dataset,
             batch_size=1,
             shuffle=False,
+            pin_memory=torch.cuda.is_available(),
             num_workers=self.num_workers,
         )
         return dataloader
