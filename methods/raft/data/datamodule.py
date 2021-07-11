@@ -7,7 +7,7 @@ class RAFTDataModule(LightningDataModule):
     def __init__(
         self,
         stage: str = "chairs",
-        image_size: tuple = (384, 512),
+        image_size: tuple = (368, 496),
         batch_size: int = 6,
         root_chairs: str = "datasets/FlyingChairs_release/data",
         root_things: str = "",

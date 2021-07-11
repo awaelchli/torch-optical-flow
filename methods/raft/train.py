@@ -33,7 +33,7 @@ def main():
     args = parser.parse_args()
 
     model = RAFT()
-    datamodule = RAFTDataModule(root_chairs="/home/jovyan/optical-flow/FlyingChairs")
+    datamodule = RAFTDataModule(root_chairs="/home/jovyan/optical-flow/FlyingChairs/data")
 
     if args.restore_ckpt is not None:
         model.load_state_dict(torch.load(args.restore_ckpt), strict=False)
