@@ -26,10 +26,10 @@ class RAFTCLI(LightningCLI):
         parser.add_argument("--validation", type=str, nargs="+")
 
     def before_fit(self):
-        if self.restore_ckpt is not None:
-            self.model.load_state_dict(torch.load(self.restore_ckpt), strict=False)
+        if self.config["restore_ckpt"] is not None:
+            self.model.load_state_dict(torch.load(self.config["restore_ckpt"]), strict=False)
 
-        if datamodule.stage != "chairs":
+        if self.datamodule.stage != "chairs":
             self.model.freeze_bn()
 
 
@@ -43,7 +43,7 @@ def main():
         trainer_defaults=dict(
             max_steps=100000,
             gradient_clip_val=1.0,
-            validate_every_n_steps=5000,
+            val_check_interval=5000,
         ),
     )
 
