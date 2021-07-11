@@ -42,7 +42,7 @@ def main():
         model.freeze_bn()
 
     trainer = Trainer.from_argparse_args(args)
-    # trainer.fit(model)
+    trainer.fit(model, datamodule=datamodule)
 
 
 if __name__ == "__main__":
