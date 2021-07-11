@@ -74,11 +74,12 @@ data:
   - 368 
   - 496
   batch_size: 10
+  num_workers: 4
   root_chairs: datasets/FlyingChairs_release/data
-  root_things: ''
-  root_sintel: ''
-  root_kitti: ''
-  root_hd1k: ''
+  root_things: datasets/FlyingThings3D
+  root_sintel: datasets/Sintel
+  root_kitti: datasets/KITTI
+  root_hd1k: datasets/HD1k
 name: raft-chairs
 restore_ckpt: null
 validation: null
