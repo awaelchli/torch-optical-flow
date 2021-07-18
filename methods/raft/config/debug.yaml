@@ -9,7 +9,7 @@ trainer:
   process_position: 0
   num_nodes: 1
   num_processes: 1
-  gpus: null
+  gpus: 1
   auto_select_gpus: false
   tpu_cores: null
   ipus: null
@@ -37,7 +37,7 @@ trainer:
   precision: 32
   weights_summary: top
   weights_save_path: null
-  num_sanity_val_steps: 2
+  num_sanity_val_steps: 0
   truncated_bptt_steps: null
   resume_from_checkpoint: null
   profiler: null
@@ -73,7 +73,7 @@ data:
   image_size:
   - 368 
   - 496
-  batch_size: 10
+  batch_size: 4
   num_workers: 4
   root_chairs: datasets/FlyingChairs/data
   root_things: datasets/FlyingThings3D
