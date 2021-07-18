@@ -136,3 +136,4 @@ scratch/
 
 # Lightning logs and checkpoints
 lightning_logs/
+wandb/

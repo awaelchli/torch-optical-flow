@@ -1,5 +1,6 @@
 seed_everything: null
 trainer:
+  logger: <pytorch_lightning.loggers.wandb.WandbLogger object at 0x7f3f86e26f10>
   checkpoint_callback: true
   callbacks: null
   default_root_dir: null
@@ -70,7 +71,7 @@ model:
 data:
   stage: chairs
   image_size:
-  - 368 
+  - 368
   - 496
   batch_size: 4
   num_workers: 4
