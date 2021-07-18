@@ -11,6 +11,9 @@ from torch.optim.lr_scheduler import OneCycleLR
 
 from optical_flow.metrics import AverageEndPointError
 
+from wandb import Image
+from optical_flow import flow2rgb
+
 
 class RAFT(LightningModule):
     def __init__(
@@ -141,6 +144,20 @@ class RAFT(LightningModule):
         self.log("loss", loss)
         self.log("epe_train", self.epe_train)
         self.log_dict(metrics)
+
+
+        if batch_idx == 0:
+            self.trainer.logger.experiment.log(
+                {
+                    "images": [
+                        Image(img0, caption="image 0"), 
+                        Image(img1, caption="image 1"), 
+                        Image(flow2rgb(flow), caption="GT flow"), 
+                        Image(flow2rgb(flow_predictions[-1]), caption="predicted flow"), 
+                    ],
+                },
+            )
+
         return loss
 
     def validation_step(self, batch, batch_idx):

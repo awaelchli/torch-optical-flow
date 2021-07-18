@@ -25,7 +25,7 @@ class RAFTCLI(LightningCLI):
 def main():
     seed_everything(1234)
 
-    logger = WandbLogger(project="lightning-raft", name="debug")
+    logger = WandbLogger(project="lightning-raft", name="debug1")
 
     cli = RAFTCLI(
         RAFT,
@@ -37,10 +37,8 @@ def main():
             gradient_clip_val=1.0,
             val_check_interval=5000,
         ),
+        save_config_callback=None,
     )
-
-    # datamodule = RAFTDataModule(root_chairs="/Volumes/Archive/Datasets/FlyingChairs/data")
-
 
 if __name__ == "__main__":
     main()
