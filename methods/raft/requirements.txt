@@ -2,3 +2,4 @@ torch
 pytorch-lightning
 opencv-python
 jsonargparse
+wandb
