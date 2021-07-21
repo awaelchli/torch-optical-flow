@@ -1,1 +1,4 @@
 -r requirements/base.txt
+opencv-python
+jsonargparse
+wandb
