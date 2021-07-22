@@ -24,15 +24,11 @@ class RAFTCLI(LightningCLI):
 
 def main():
     seed_everything(1234)
-
-    logger = WandbLogger(project="lightning-raft", name="debug1")
-
     cli = RAFTCLI(
         RAFT,
         RAFTDataModule,
         description="Lightning RAFT",
         trainer_defaults=dict(
-            logger=logger,
             max_steps=100000,
             gradient_clip_val=1.0,
             val_check_interval=5000,
