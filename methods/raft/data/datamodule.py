@@ -22,7 +22,8 @@ class RAFTDataModule(LightningDataModule):
         self.image_size = image_size
         self.batch_size = batch_size
         self.num_workers = num_workers
-        self.root_chairs = root_chairs
+        print(root_chairs)
+        self.root_chairs = root_chairs + "/FlyingChairs/data"
         self.root_things = root_things
         self.root_sintel = root_sintel
         self.root_kitti = root_kitti
