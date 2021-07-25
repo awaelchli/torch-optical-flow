@@ -2,8 +2,8 @@ import torch
 from data.datamodule import RAFTDataModule
 from model import RAFT
 from pytorch_lightning import seed_everything
-from pytorch_lightning.utilities.cli import LightningArgumentParser, LightningCLI
 from pytorch_lightning.loggers import WandbLogger
+from pytorch_lightning.utilities.cli import LightningArgumentParser, LightningCLI
 
 
 class RAFTCLI(LightningCLI):
@@ -28,6 +28,7 @@ def main():
         description="Lightning RAFT",
         save_config_callback=None,
     )
+
 
 if __name__ == "__main__":
     main()
