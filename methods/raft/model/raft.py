@@ -191,6 +191,11 @@ class RAFT(LightningModule):
         }
         return configuration
 
+    def on_validation_model_train(self):
+        super().on_validation_model_train()
+        if self.datamodule is not None and self.datamodule.stage != "chairs":
+            self.freeze_bn()
+
 
 def sequence_loss(flow_preds, flow_gt, valid, gamma=0.8, max_flow=400):
     """ Loss function defined over sequence of flow predictions """
