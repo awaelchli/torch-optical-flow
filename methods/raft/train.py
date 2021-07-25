@@ -26,11 +26,6 @@ def main():
         RAFT,
         RAFTDataModule,
         description="Lightning RAFT",
-        trainer_defaults=dict(
-            max_steps=100000,
-            gradient_clip_val=1.0,
-            val_check_interval=5000,
-        ),
         save_config_callback=None,
     )
 
