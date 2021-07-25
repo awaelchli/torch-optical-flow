@@ -25,7 +25,6 @@ class RAFTCLI(LightningCLI):
 
 
 def main():
-    seed_everything(1234)
     cli = RAFTCLI(
         RAFT,
         RAFTDataModule,
