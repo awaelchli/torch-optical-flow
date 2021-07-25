@@ -6,6 +6,7 @@ from model.extractor import BasicEncoder
 from model.update import BasicUpdateBlock
 from model.utils import coords_grid, upflow8
 from pytorch_lightning import LightningModule
+from pytorch_lightning.loggers import WandbLogger
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import OneCycleLR
 from wandb import Image
@@ -144,8 +145,8 @@ class RAFT(LightningModule):
         self.log("epe_train", self.epe_train)
         self.log_dict(metrics)
 
-        if batch_idx == 0:
-            self.trainer.logger.experiment.log(
+        if self.global_step % 5000 == 0 and isinstance(self.logger, WandbLogger):
+            self.logger.experiment.log(
                 {
                     "images": [
                         Image(img0, caption="image 0"),
