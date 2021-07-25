@@ -8,9 +8,7 @@ from pytorch_lightning.loggers import WandbLogger
 
 class RAFTCLI(LightningCLI):
     def add_arguments_to_parser(self, parser: LightningArgumentParser) -> None:
-        parser.add_argument("--name", default="raft", help="name your experiment")
         parser.add_argument("--restore_ckpt", help="restore checkpoint")
-        parser.add_argument("--validation", type=str, nargs="+")
 
     def before_fit(self) -> None:
         if self.config["restore_ckpt"] is not None:
