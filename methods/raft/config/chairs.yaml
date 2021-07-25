@@ -1,4 +1,5 @@
 seed_everything: 1234
+
 trainer:
   callbacks:
     - class_path: pytorch_lightning.callbacks.ModelCheckpoint
@@ -34,6 +35,7 @@ model:
   lr: 0.0004
   wdecay: 0.0001
   epsilon: 1.0e-08
+
 data:
   stage: chairs
   image_size:
