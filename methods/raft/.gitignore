@@ -2,4 +2,7 @@
 datasets/
 logs/
 wandb/
-pretrained/
+
+# checkpoint files
+*.pth
+*.ckpt
