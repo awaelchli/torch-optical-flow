@@ -13,7 +13,7 @@ trainer:
     init_args:
       save_dir: ./logs
       project: lightning-raft
-      name: raft-chairs
+      name: raft-things
   gradient_clip_val: 1.0
   gradient_clip_algorithm: norm
   gpus: 2
@@ -33,17 +33,16 @@ model:
   iters: 12
   gamma: 0.8
   dropout: 0.0
-  lr: 0.0004
+  lr: 0.000125
   wdecay: 0.0001
   epsilon: 1.0e-08
 
-# batch size etc. is per GPU (DDP)
 data:
-  stage: chairs
+  stage: things
   image_size:
-  - 368 
-  - 496
-  batch_size: 5
+  - 400 
+  - 720
+  batch_size: 3
   num_workers: 4
   root_chairs: datasets/FlyingChairs/data
   root_things: datasets/FlyingThings3D
