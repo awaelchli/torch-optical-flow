@@ -44,7 +44,7 @@ data:
   - 368 
   - 496
   batch_size: 5
-  num_workers: 4
+  num_workers: 8
   root_chairs: datasets/FlyingChairs/data
   root_things: datasets/FlyingThings3D
   root_sintel: datasets/Sintel
