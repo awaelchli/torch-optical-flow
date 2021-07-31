@@ -18,6 +18,7 @@ class RAFTDataModule(LightningDataModule):
         root_hd1k: str = "datasets/HD1k",
     ):
         super().__init__()
+        self.save_hyperparameters()
         self.stage = stage
         self.image_size = image_size
         self.batch_size = batch_size
