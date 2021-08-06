@@ -1,3 +1,5 @@
+from typing import List
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -5,6 +7,8 @@ from model.corr import CorrBlock
 from model.extractor import BasicEncoder
 from model.update import BasicUpdateBlock
 from model.utils import coords_grid, upflow8
+from torch import Tensor
+
 from pytorch_lightning import LightningModule
 from pytorch_lightning.loggers import WandbLogger
 from torch.optim import AdamW
@@ -56,7 +60,7 @@ class RAFT(LightningModule):
 
     @staticmethod
     def initialize_flow(img):
-        """ Flow is represented as difference between two coordinate grids, flow = coords1 - coords0 """
+        """Flow is represented as difference between two coordinate grids, flow = coords1 - coords0"""
         n, c, h, w = img.shape
         coords0 = coords_grid(n, h // 8, w // 8).to(img.device)
         coords1 = coords_grid(n, h // 8, w // 8).to(img.device)
@@ -65,7 +69,7 @@ class RAFT(LightningModule):
 
     @staticmethod
     def upsample_flow(flow, mask):
-        """ Upsample flow field [H/8, W/8, 2] -> [H, W, 2] using convex combination """
+        """Upsample flow field [H/8, W/8, 2] -> [H, W, 2] using convex combination"""
         n, _, h, w = flow.shape
         mask = mask.view(n, 1, 9, 8, 8, h, w)
         mask = torch.softmax(mask, dim=2)
@@ -80,7 +84,7 @@ class RAFT(LightningModule):
     def forward(
         self, image0, image1, iters=12, flow_init=None, upsample=True, test_mode=False
     ):
-        """ Estimate optical flow between pair of frames """
+        """Estimate optical flow between pair of frames"""
 
         image0 = 2 * (image0 / 255.0) - 1.0
         image1 = 2 * (image1 / 255.0) - 1.0
@@ -196,20 +200,28 @@ class RAFT(LightningModule):
             self.freeze_bn()
 
 
-def sequence_loss(flow_preds, flow_gt, valid, gamma=0.8, max_flow=400):
-    """ Loss function defined over sequence of flow predictions """
-
+def sequence_loss(
+    flow_preds: List[Tensor],
+    flow_gt: Tensor,
+    valid: Tensor,
+    gamma: float = 0.8,
+    max_flow: float = 400.0,
+):
+    """Loss function defined over sequence of flow predictions"""
+    flow_preds = torch.stack(flow_preds)
     n_predictions = len(flow_preds)
-    flow_loss = 0.0
 
-    # exlude invalid pixels and extremely large diplacements
+    # exclude invalid pixels and extremely large displacements
     mag = torch.sum(flow_gt ** 2, dim=1).sqrt()
     valid = (valid >= 0.5) & (mag < max_flow)
 
-    for i in range(n_predictions):
-        i_weight = gamma ** (n_predictions - i - 1)
-        i_loss = (flow_preds[i] - flow_gt).abs()
-        flow_loss += i_weight * (valid[:, None] * i_loss).mean()
+    idx = torch.arange(float(n_predictions), device=flow_gt.device)
+
+    # the weight for each element in the sequence
+    weight = gamma ** (n_predictions - idx - 1)
+
+    losses = valid[None, :, None] * (flow_preds - flow_gt[None]).abs()
+    flow_loss = torch.sum(weight * losses.flatten(1).mean(dim=1))
 
     epe = torch.sum((flow_preds[-1] - flow_gt) ** 2, dim=1).sqrt()
     epe = epe.view(-1)[valid.view(-1)]
