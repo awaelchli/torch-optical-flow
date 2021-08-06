@@ -227,7 +227,6 @@ def sequence_loss(
     epe = epe.view(-1)[valid.view(-1)]
 
     metrics = {
-        "epe": epe.mean().item(),
         "1px": (epe < 1).float().mean().item(),
         "3px": (epe < 3).float().mean().item(),
         "5px": (epe < 5).float().mean().item(),
