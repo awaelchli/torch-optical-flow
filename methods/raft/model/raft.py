@@ -204,6 +204,10 @@ class RAFT(LightningModule):
         if self.datamodule is not None and self.datamodule.stage != "chairs":
             self.freeze_bn()
 
+    def optimizer_zero_grad(self, *args, optimizer, **kwargs):
+        # setting grads to None gives a modest performance improvement
+        optimizer.zero_grad(set_to_none=True)
+
 
 def sequence_loss(
     flow_preds: List[Tensor],
