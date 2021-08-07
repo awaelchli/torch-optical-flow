@@ -126,8 +126,6 @@ class RAFTDataModule(LightningDataModule):
         return dataloader
 
     def val_dataloader(self):
-        # TODO: validation for other stages
-        #   implement validation_step accordingly
         if self.stage == "chairs":
             dataset = FlyingChairs(split="validation", root=self.root_chairs)
         elif self.stage in ("things", "sintel"):
