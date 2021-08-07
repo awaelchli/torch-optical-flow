@@ -29,7 +29,7 @@ def main():
     cli = RAFTCLI(
         RAFT,
         RAFTDataModule,
-        description="Lightning RAFT",
+        description="Lightning RAFT Training",
         save_config_callback=None,
     )
 
