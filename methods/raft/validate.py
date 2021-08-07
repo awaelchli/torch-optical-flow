@@ -1,32 +1,22 @@
-import torch
 from data.datamodule import RAFTDataModule
-from jsonargparse import CLI
 from model import RAFT
-from pretrained.convert import strip_module
-from pytorch_lightning import Trainer
-from pytorch_lightning.loggers import WandbLogger
+from cli import RAFTCLI
 
 
-def main(checkpoint: str):
-    model = RAFT()
-    datamodule = RAFTDataModule()
+class RAFTEvaluationCLI(RAFTCLI):
 
-    # TODO: use load_from_checkpoint
-    checkpoint = torch.load(checkpoint)
-    state_dict = checkpoint.get("state_dict", checkpoint)
-    state_dict = strip_module(state_dict)
-    model.load_state_dict(state_dict, strict=False)
+    def fit(self) -> None:
+        self.trainer.validate(**self.fit_kwargs)
 
-    trainer = Trainer(
-        gpus=1,
-        logger=WandbLogger(
-            save_dir="./logs",
-            project="lightning-raft",
-            name=f"raft-evaluation",
-        ),
+
+def main():
+    cli = RAFTEvaluationCLI(
+        RAFT,
+        RAFTDataModule,
+        description="Lightning RAFT Evaluation",
+        save_config_callback=None,
     )
-    trainer.validate(model, datamodule)
 
 
 if __name__ == "__main__":
-    CLI()
+    main()
