@@ -199,7 +199,10 @@ class RAFT(LightningModule):
 
     def on_validation_model_train(self):
         super().on_validation_model_train()
-        if self.trainer.datamodule is not None and self.trainer.datamodule.stage != "chairs":
+        if (
+            self.trainer.datamodule is not None
+            and self.trainer.datamodule.stage != "chairs"
+        ):
             self.freeze_bn()
 
     def optimizer_zero_grad(self, epoch, batch_idx, optimizer, optimizer_idx):
@@ -215,28 +218,62 @@ def sequence_loss(
     max_flow: float = 400.0,
 ):
     """Loss function defined over sequence of flow predictions"""
-    flow_preds = torch.stack(flow_preds)
+
     n_predictions = len(flow_preds)
+    flow_loss = 0.0
 
     # exclude invalid pixels and extremely large displacements
     mag = torch.sum(flow_gt ** 2, dim=1).sqrt()
     valid = (valid >= 0.5) & (mag < max_flow)
 
-    idx = torch.arange(float(n_predictions), device=flow_gt.device)
-
-    # the weight for each element in the sequence
-    weight = gamma ** (n_predictions - idx - 1)
-
-    losses = valid[None, :, None] * (flow_preds - flow_gt[None]).abs()
-    flow_loss = torch.sum(weight * losses.flatten(1).mean(dim=1))
+    for i in range(n_predictions):
+        i_weight = gamma ** (n_predictions - i - 1)
+        i_loss = (flow_preds[i] - flow_gt).abs()
+        flow_loss += i_weight * (valid[:, None] * i_loss).mean()
 
     epe = torch.sum((flow_preds[-1] - flow_gt) ** 2, dim=1).sqrt()
     epe = epe.view(-1)[valid.view(-1)]
 
     metrics = {
+        "epe": epe.mean().item(),
         "1px": (epe < 1).float().mean().item(),
         "3px": (epe < 3).float().mean().item(),
         "5px": (epe < 5).float().mean().item(),
     }
 
     return flow_loss, metrics
+
+
+# def sequence_loss(
+#     flow_preds: List[Tensor],
+#     flow_gt: Tensor,
+#     valid: Tensor,
+#     gamma: float = 0.8,
+#     max_flow: float = 400.0,
+# ):
+#     """Loss function defined over sequence of flow predictions"""
+#     flow_preds = torch.stack(flow_preds)
+#     n_predictions = len(flow_preds)
+
+#     # exclude invalid pixels and extremely large displacements
+#     mag = torch.sum(flow_gt ** 2, dim=1).sqrt()
+#     valid = (valid >= 0.5) & (mag < max_flow)
+
+#     idx = torch.arange(float(n_predictions), device=flow_gt.device)
+
+#     # the weight for each element in the sequence
+#     weight = gamma ** (n_predictions - idx - 1)
+
+#     losses = valid[None, :, None] * (flow_preds - flow_gt[None]).abs()
+#     flow_loss = torch.sum(weight * losses.flatten(1).mean(dim=1))
+
+#     epe = torch.sum((flow_preds[-1] - flow_gt) ** 2, dim=1).sqrt()
+#     epe = epe.view(-1)[valid.view(-1)]
+
+#     metrics = {
+#         "1px": (epe < 1).float().mean().item(),
+#         "3px": (epe < 3).float().mean().item(),
+#         "5px": (epe < 5).float().mean().item(),
+#     }
+
+#     return flow_loss, metrics
