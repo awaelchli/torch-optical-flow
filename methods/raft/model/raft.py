@@ -17,6 +17,7 @@ from wandb import Image
 
 from optical_flow import flow2rgb
 from optical_flow.metrics import AverageEndPointError
+from model.utils import InputPadder
 
 
 class RAFT(LightningModule):
@@ -165,7 +166,11 @@ class RAFT(LightningModule):
 
     def validation_step(self, batch, batch_idx):
         img0, img1, flow_gt, _ = batch
+
+        padder = InputPadder(img0.shape)
+        img0, img1 = padder.pad(img0, img1)
         _, flow_pr = self(img0, img1, iters=24, test_mode=True)
+        flow_pr = padder.unpad(flow_pr)
 
         self.epe_val(flow_pr, flow_gt)
         self.log("epe_val", self.epe_val)
