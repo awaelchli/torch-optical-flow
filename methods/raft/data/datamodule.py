@@ -16,10 +16,10 @@ class RAFTDataModule(LightningDataModule):
         root_sintel: str = "datasets/Sintel",
         root_kitti: str = "datasets/KITTI",
         root_hd1k: str = "datasets/HD1k",
-    ):
+    ) -> None:
         super().__init__()
         self.save_hyperparameters()
-        self.stage = stage
+        self.stage = stage.lower()
         self.image_size = image_size
         self.batch_size = batch_size
         self.num_workers = num_workers
@@ -29,7 +29,10 @@ class RAFTDataModule(LightningDataModule):
         self.root_kitti = root_kitti
         self.root_hd1k = root_hd1k
 
-    def train_dataloader(self):
+        if self.stage not in ("chairs", "things", "sintel", "kitti"):
+            raise ValueError(f"Unknown stage name: {self.stage}")
+
+    def train_dataloader(self) -> DataLoader:
         train_ds = "C+T+K+S+H"
 
         if self.stage == "chairs":
@@ -125,7 +128,7 @@ class RAFTDataModule(LightningDataModule):
 
         return dataloader
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> DataLoader:
         if self.stage == "chairs":
             dataset = FlyingChairs(split="validation", root=self.root_chairs)
         elif self.stage in ("things", "sintel"):

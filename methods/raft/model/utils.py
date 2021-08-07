@@ -1,11 +1,14 @@
+from typing import Sequence, List, Union, Tuple
+
 import torch
 import torch.nn.functional as F
+from torch import Tensor
 
 
 class InputPadder:
     """Pads images such that dimensions are divisible by 8"""
 
-    def __init__(self, dims, mode="sintel"):
+    def __init__(self, dims: Sequence[int], mode: str = "sintel") -> None:
         self.ht, self.wd = dims[-2:]
         pad_ht = (((self.ht // 8) + 1) * 8 - self.ht) % 8
         pad_wd = (((self.wd // 8) + 1) * 8 - self.wd) % 8
@@ -19,16 +22,18 @@ class InputPadder:
         else:
             self._pad = [pad_wd // 2, pad_wd - pad_wd // 2, 0, pad_ht]
 
-    def pad(self, *inputs):
+    def pad(self, *inputs: Tensor) -> List[Tensor]:
         return [F.pad(x, self._pad, mode="replicate") for x in inputs]
 
-    def unpad(self, x):
+    def unpad(self, x: Tensor) -> Tensor:
         ht, wd = x.shape[-2:]
         c = [self._pad[2], ht - self._pad[3], self._pad[0], wd - self._pad[1]]
         return x[..., c[0] : c[1], c[2] : c[3]]
 
 
-def bilinear_sampler(img, coords, mode="bilinear", mask=False):
+def bilinear_sampler(
+    img: Tensor, coords: Tensor, mode: str = "bilinear", mask: bool = False
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Wrapper for grid_sample, uses pixel coordinates"""
     H, W = img.shape[-2:]
     xgrid, ygrid = coords.split([1, 1], dim=-1)
@@ -45,12 +50,12 @@ def bilinear_sampler(img, coords, mode="bilinear", mask=False):
     return img
 
 
-def coords_grid(batch, ht, wd):
+def coords_grid(batch: Tensor, ht: int, wd: int) -> Tensor:
     coords = torch.meshgrid(torch.arange(ht), torch.arange(wd))
     coords = torch.stack(coords[::-1], dim=0).float()
     return coords[None].repeat(batch, 1, 1, 1)
 
 
-def upflow8(flow, mode="bilinear"):
+def upflow8(flow: Tensor, mode: str = "bilinear") -> Tensor:
     new_size = (8 * flow.shape[2], 8 * flow.shape[3])
     return 8 * F.interpolate(flow, size=new_size, mode=mode, align_corners=True)

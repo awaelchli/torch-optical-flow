@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import cv2
 import numpy as np
 from PIL import Image
@@ -9,7 +11,13 @@ from torchvision.transforms import ColorJitter
 
 
 class FlowAugmentor:
-    def __init__(self, crop_size, min_scale=-0.2, max_scale=0.5, do_flip=True):
+    def __init__(
+        self,
+        crop_size: Tuple[int, int],
+        min_scale: float = -0.2,
+        max_scale: float = 0.5,
+        do_flip: bool = True,
+    ) -> None:
 
         # spatial augmentation params
         self.crop_size = crop_size
@@ -31,8 +39,10 @@ class FlowAugmentor:
         self.asymmetric_color_aug_prob = 0.2
         self.eraser_aug_prob = 0.5
 
-    def color_transform(self, img1, img2):
-        """ Photometric augmentation """
+    def color_transform(
+        self, img1: np.ndarray, img2: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Photometric augmentation"""
 
         # asymmetric
         if np.random.rand() < self.asymmetric_color_aug_prob:
@@ -49,8 +59,10 @@ class FlowAugmentor:
 
         return img1, img2
 
-    def eraser_transform(self, img1, img2, bounds=[50, 100]):
-        """ Occlusion augmentation """
+    def eraser_transform(
+        self, img1: np.ndarray, img2: np.ndarray, bounds: Tuple[int, int] = (50, 100)
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Occlusion augmentation"""
 
         ht, wd = img1.shape[:2]
         if np.random.rand() < self.eraser_aug_prob:
@@ -64,7 +76,9 @@ class FlowAugmentor:
 
         return img1, img2
 
-    def spatial_transform(self, img1, img2, flow):
+    def spatial_transform(
+        self, img1: np.ndarray, img2: np.ndarray, flow: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         # randomly sample scale
         ht, wd = img1.shape[:2]
         min_scale = np.maximum(
@@ -114,7 +128,9 @@ class FlowAugmentor:
 
         return img1, img2, flow
 
-    def __call__(self, img1, img2, flow):
+    def __call__(
+        self, img1: np.ndarray, img2: np.ndarray, flow: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         img1, img2 = self.color_transform(img1, img2)
         img1, img2 = self.eraser_transform(img1, img2)
         img1, img2, flow = self.spatial_transform(img1, img2, flow)
@@ -127,7 +143,13 @@ class FlowAugmentor:
 
 
 class SparseFlowAugmentor:
-    def __init__(self, crop_size, min_scale=-0.2, max_scale=0.5, do_flip=False):
+    def __init__(
+        self,
+        crop_size: Tuple[int, int],
+        min_scale: float = -0.2,
+        max_scale: float = 0.5,
+        do_flip: bool = False,
+    ) -> None:
         # spatial augmentation params
         self.crop_size = crop_size
         self.min_scale = min_scale
@@ -148,7 +170,9 @@ class SparseFlowAugmentor:
         self.asymmetric_color_aug_prob = 0.2
         self.eraser_aug_prob = 0.5
 
-    def color_transform(self, img1, img2):
+    def color_transform(
+        self, img1: np.ndarray, img2: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
         image_stack = np.concatenate([img1, img2], axis=0)
         image_stack = np.array(
             self.photo_aug(Image.fromarray(image_stack)), dtype=np.uint8
@@ -156,7 +180,9 @@ class SparseFlowAugmentor:
         img1, img2 = np.split(image_stack, 2, axis=0)
         return img1, img2
 
-    def eraser_transform(self, img1, img2):
+    def eraser_transform(
+        self, img1: np.ndarray, img2: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
         ht, wd = img1.shape[:2]
         if np.random.rand() < self.eraser_aug_prob:
             mean_color = np.mean(img2.reshape(-1, 3), axis=0)
@@ -169,7 +195,9 @@ class SparseFlowAugmentor:
 
         return img1, img2
 
-    def resize_sparse_flow_map(self, flow, valid, fx=1.0, fy=1.0):
+    def resize_sparse_flow_map(
+        self, flow: np.ndarray, valid: np.ndarray, fx: float = 1.0, fy: float = 1.0
+    ) -> Tuple[np.ndarray, np.ndarray]:
         ht, wd = flow.shape[:2]
         coords = np.meshgrid(np.arange(wd), np.arange(ht))
         coords = np.stack(coords, axis=-1)
@@ -203,7 +231,9 @@ class SparseFlowAugmentor:
 
         return flow_img, valid_img
 
-    def spatial_transform(self, img1, img2, flow, valid):
+    def spatial_transform(
+        self, img1: np.ndarray, img2: np.ndarray, flow: np.ndarray, valid: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         # randomly sample scale
 
         ht, wd = img1.shape[:2]
@@ -249,7 +279,9 @@ class SparseFlowAugmentor:
         valid = valid[y0 : y0 + self.crop_size[0], x0 : x0 + self.crop_size[1]]
         return img1, img2, flow, valid
 
-    def __call__(self, img1, img2, flow, valid):
+    def __call__(
+        self, img1: np.ndarray, img2: np.ndarray, flow: np.ndarray, valid: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         img1, img2 = self.color_transform(img1, img2)
         img1, img2 = self.eraser_transform(img1, img2)
         img1, img2, flow, valid = self.spatial_transform(img1, img2, flow, valid)

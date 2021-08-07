@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Tuple, Any, Optional, Union
 
 import torch
 import torch.nn as nn
@@ -10,7 +10,7 @@ from model.utils import coords_grid, InputPadder, upflow8
 from pytorch_lightning import LightningModule
 from pytorch_lightning.loggers import WandbLogger
 from torch import Tensor
-from torch.optim import AdamW
+from torch.optim import AdamW, Optimizer
 from torch.optim.lr_scheduler import OneCycleLR
 from wandb import Image
 
@@ -45,20 +45,22 @@ class RAFT(LightningModule):
             dropout=self.hparams.dropout,
         )
         self.update_block = BasicUpdateBlock(
-            self.hparams, hidden_dim=self.hparams.hidden_dim
+            corr_levels=self.hparams.corr_levels,
+            corr_radius=self.hparams.corr_radius,
+            hidden_dim=self.hparams.hidden_dim,
         )
 
         # metrics
         self.epe_train = AverageEndPointError()
         self.epe_val = AverageEndPointError()
 
-    def freeze_bn(self):
+    def freeze_bn(self) -> None:
         for m in self.modules():
             if isinstance(m, nn.BatchNorm2d):
                 m.eval()
 
     @staticmethod
-    def initialize_flow(img):
+    def initialize_flow(img: Tensor) -> Tuple[Tensor, Tensor]:
         """Flow is represented as difference between two coordinate grids, flow = coords1 - coords0"""
         n, c, h, w = img.shape
         coords0 = coords_grid(n, h // 8, w // 8).to(img.device)
@@ -67,7 +69,7 @@ class RAFT(LightningModule):
         return coords0, coords1
 
     @staticmethod
-    def upsample_flow(flow, mask):
+    def upsample_flow(flow: Tensor, mask: Tensor) -> Tensor:
         """Upsample flow field [H/8, W/8, 2] -> [H, W, 2] using convex combination"""
         n, _, h, w = flow.shape
         mask = mask.view(n, 1, 9, 8, 8, h, w)
@@ -81,8 +83,14 @@ class RAFT(LightningModule):
         return up_flow.reshape(n, 2, 8 * h, 8 * w)
 
     def forward(
-        self, image0, image1, iters=12, flow_init=None, upsample=True, test_mode=False
-    ):
+        self,
+        image0: Tensor,
+        image1: Tensor,
+        iters: int = 12,
+        flow_init: Optional[Tensor] = None,
+        upsample: bool = True,
+        test_mode: bool = False,
+    ) -> Union[Tuple[Tensor, Tensor], List[Tensor]]:
         """Estimate optical flow between pair of frames"""
 
         image0 = 2 * (image0 / 255.0) - 1.0
@@ -136,7 +144,9 @@ class RAFT(LightningModule):
 
         return flow_predictions
 
-    def training_step(self, batch, batch_idx):
+    def training_step(
+        self, batch: Tuple[Tensor, Tensor, Tensor, Tensor], batch_idx: int
+    ) -> Tensor:
         img0, img1, flow, valid = batch
         flow_predictions = self(img0, img1, iters=self.hparams.iters)
         loss, metrics = sequence_loss(
@@ -162,7 +172,9 @@ class RAFT(LightningModule):
 
         return loss
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(
+        self, batch: Tuple[Tensor, Tensor, Tensor, Tensor], batch_idx: int
+    ) -> None:
         img0, img1, flow_gt, _ = batch
 
         padder = InputPadder(img0.shape)
@@ -173,7 +185,7 @@ class RAFT(LightningModule):
         self.epe_val(flow_pr, flow_gt)
         self.log("epe_val", self.epe_val)
 
-    def configure_optimizers(self):
+    def configure_optimizers(self) -> Dict[str, Any]:
         optimizer = AdamW(
             self.parameters(),
             lr=self.hparams.lr,
@@ -197,7 +209,7 @@ class RAFT(LightningModule):
         }
         return configuration
 
-    def on_validation_model_train(self):
+    def on_validation_model_train(self) -> None:
         super().on_validation_model_train()
         if (
             self.trainer.datamodule is not None
@@ -205,7 +217,9 @@ class RAFT(LightningModule):
         ):
             self.freeze_bn()
 
-    def optimizer_zero_grad(self, epoch, batch_idx, optimizer, optimizer_idx):
+    def optimizer_zero_grad(
+        self, epoch: int, batch_idx: int, optimizer: Optimizer, optimizer_idx: int
+    ) -> None:
         # setting grads to None gives a modest performance improvement
         optimizer.zero_grad(set_to_none=True)
 
@@ -216,7 +230,7 @@ def sequence_loss(
     valid: Tensor,
     gamma: float = 0.8,
     max_flow: float = 400.0,
-):
+) -> Tuple[Tensor, Dict[str, float]]:
     """Loss function defined over sequence of flow predictions"""
 
     n_predictions = len(flow_preds)
@@ -240,7 +254,6 @@ def sequence_loss(
         "3px": (epe < 3).float().mean().item(),
         "5px": (epe < 5).float().mean().item(),
     }
-
     return flow_loss, metrics
 
 

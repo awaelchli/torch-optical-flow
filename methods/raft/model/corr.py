@@ -1,10 +1,13 @@
 import torch
 import torch.nn.functional as F
 from model.utils import bilinear_sampler, coords_grid
+from torch import Tensor
 
 
 class CorrBlock:
-    def __init__(self, fmap1, fmap2, num_levels=4, radius=4):
+    def __init__(
+        self, fmap1: Tensor, fmap2: Tensor, num_levels: int = 4, radius: int = 4
+    ) -> None:
         self.num_levels = num_levels
         self.radius = radius
         self.corr_pyramid = []
@@ -20,7 +23,7 @@ class CorrBlock:
             corr = F.avg_pool2d(corr, 2, stride=2)
             self.corr_pyramid.append(corr)
 
-    def __call__(self, coords):
+    def __call__(self, coords: Tensor) -> Tensor:
         r = self.radius
         coords = coords.permute(0, 2, 3, 1)
         batch, h1, w1, _ = coords.shape
@@ -44,7 +47,7 @@ class CorrBlock:
         return out.permute(0, 3, 1, 2).contiguous().float()
 
     @staticmethod
-    def corr(fmap1, fmap2):
+    def corr(fmap1: Tensor, fmap2: Tensor) -> Tensor:
         batch, dim, ht, wd = fmap1.shape
         fmap1 = fmap1.view(batch, dim, ht * wd)
         fmap2 = fmap2.view(batch, dim, ht * wd)

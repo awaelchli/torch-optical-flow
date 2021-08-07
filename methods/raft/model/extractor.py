@@ -1,9 +1,12 @@
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 
 class ResidualBlock(nn.Module):
-    def __init__(self, in_planes, planes, norm_fn="group", stride=1):
+    def __init__(
+        self, in_planes: int, planes: int, norm_fn: str = "group", stride: int = 1
+    ) -> None:
         super(ResidualBlock, self).__init__()
 
         self.conv1 = nn.Conv2d(
@@ -46,7 +49,7 @@ class ResidualBlock(nn.Module):
                 nn.Conv2d(in_planes, planes, kernel_size=1, stride=stride), self.norm3
             )
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         y = x
         y = self.relu(self.norm1(self.conv1(y)))
         y = self.relu(self.norm2(self.conv2(y)))
@@ -58,7 +61,9 @@ class ResidualBlock(nn.Module):
 
 
 class BottleneckBlock(nn.Module):
-    def __init__(self, in_planes, planes, norm_fn="group", stride=1):
+    def __init__(
+        self, in_planes: int, planes: int, norm_fn: str = "group", stride: int = 1
+    ) -> None:
         super(BottleneckBlock, self).__init__()
 
         self.conv1 = nn.Conv2d(in_planes, planes // 4, kernel_size=1, padding=0)
@@ -106,7 +111,7 @@ class BottleneckBlock(nn.Module):
                 nn.Conv2d(in_planes, planes, kernel_size=1, stride=stride), self.norm4
             )
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         y = x
         y = self.relu(self.norm1(self.conv1(y)))
         y = self.relu(self.norm2(self.conv2(y)))
@@ -119,7 +124,9 @@ class BottleneckBlock(nn.Module):
 
 
 class BasicEncoder(nn.Module):
-    def __init__(self, output_dim=128, norm_fn="batch", dropout=0.0):
+    def __init__(
+        self, output_dim: int = 128, norm_fn: str = "batch", dropout: float = 0.0
+    ) -> None:
         super(BasicEncoder, self).__init__()
         self.norm_fn = norm_fn
 
@@ -159,7 +166,7 @@ class BasicEncoder(nn.Module):
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
 
-    def _make_layer(self, dim, stride=1):
+    def _make_layer(self, dim: int, stride=1) -> nn.Module:
         layer1 = ResidualBlock(self.in_planes, dim, self.norm_fn, stride=stride)
         layer2 = ResidualBlock(dim, dim, self.norm_fn, stride=1)
         layers = (layer1, layer2)
@@ -167,7 +174,7 @@ class BasicEncoder(nn.Module):
         self.in_planes = dim
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
 
         # if input is list, combine batch dimension
         is_list = isinstance(x, tuple) or isinstance(x, list)
@@ -195,7 +202,9 @@ class BasicEncoder(nn.Module):
 
 
 class SmallEncoder(nn.Module):
-    def __init__(self, output_dim=128, norm_fn="batch", dropout=0.0):
+    def __init__(
+        self, output_dim: int = 128, norm_fn: str = "batch", dropout: float = 0.0
+    ) -> None:
         super(SmallEncoder, self).__init__()
         self.norm_fn = norm_fn
 
@@ -234,7 +243,7 @@ class SmallEncoder(nn.Module):
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
 
-    def _make_layer(self, dim, stride=1):
+    def _make_layer(self, dim: int, stride: int = 1) -> nn.Module:
         layer1 = BottleneckBlock(self.in_planes, dim, self.norm_fn, stride=stride)
         layer2 = BottleneckBlock(dim, dim, self.norm_fn, stride=1)
         layers = (layer1, layer2)
@@ -242,7 +251,7 @@ class SmallEncoder(nn.Module):
         self.in_planes = dim
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
 
         # if input is list, combine batch dimension
         is_list = isinstance(x, tuple) or isinstance(x, list)
