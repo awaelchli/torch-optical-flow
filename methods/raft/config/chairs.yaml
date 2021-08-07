@@ -47,6 +47,6 @@ data:
   num_workers: 8
   root_chairs: datasets/FlyingChairs/data
   root_things: datasets/FlyingThings3D
-  root_sintel: datasets/Sintel
+  root_sintel: datasets/MPI-Sintel
   root_kitti: datasets/KITTI
   root_hd1k: datasets/HD1k
