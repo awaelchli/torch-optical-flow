@@ -1,5 +1,5 @@
 seed_everything: 1234
-restore_weights: pretrained/checkpoints/raft-chairs.pth
+restore_weights: pretrained/checkpoints/raft-chairs.ckpt
 
 trainer:
   callbacks:
