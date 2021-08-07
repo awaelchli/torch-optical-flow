@@ -8,6 +8,9 @@ trainer:
         mode: min
         save_top_k: -1
         save_last: true
+    - class_path: pytorch_lightning.callbacks.LearningRateMonitor
+      init_args:
+        logging_interval: step
   logger:
     class_path: pytorch_lightning.loggers.WandbLogger
     init_args:
@@ -16,14 +19,12 @@ trainer:
       name: raft-chairs
   gradient_clip_val: 1.0
   gradient_clip_algorithm: norm
-  gpus: 2
-  max_steps: 100000
+  gpus: 1
+  max_steps: 120000
   val_check_interval: 1.0
   num_sanity_val_steps: 0
   log_every_n_steps: 50
-  accelerator: ddp
-  plugins: ddp_find_unused_parameters_false
-  precision: 32
+  precision: 16
   
 model:
   hidden_dim: 128
@@ -33,17 +34,16 @@ model:
   iters: 12
   gamma: 0.8
   dropout: 0.0
-  lr: 0.0004
+  lr: 0.00025
   wdecay: 0.0001
   epsilon: 1.0e-08
 
-# batch size etc. is per GPU (DDP)
 data:
   stage: chairs
   image_size:
   - 368 
   - 496
-  batch_size: 5
+  batch_size: 8
   num_workers: 8
   root_chairs: datasets/FlyingChairs/data
   root_things: datasets/FlyingThings3D
