@@ -6,18 +6,16 @@ import torch.nn.functional as F
 from model.corr import CorrBlock
 from model.extractor import BasicEncoder
 from model.update import BasicUpdateBlock
-from model.utils import coords_grid, upflow8
-from torch import Tensor
-
+from model.utils import coords_grid, InputPadder, upflow8
 from pytorch_lightning import LightningModule
 from pytorch_lightning.loggers import WandbLogger
+from torch import Tensor
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import OneCycleLR
 from wandb import Image
 
 from optical_flow import flow2rgb
 from optical_flow.metrics import AverageEndPointError
-from model.utils import InputPadder
 
 
 class RAFT(LightningModule):

@@ -1,10 +1,9 @@
-import numpy as np
 import torch
 import torch.nn.functional as F
 
 
 class InputPadder:
-    """ Pads images such that dimensions are divisible by 8 """
+    """Pads images such that dimensions are divisible by 8"""
 
     def __init__(self, dims, mode="sintel"):
         self.ht, self.wd = dims[-2:]
@@ -30,7 +29,7 @@ class InputPadder:
 
 
 def bilinear_sampler(img, coords, mode="bilinear", mask=False):
-    """ Wrapper for grid_sample, uses pixel coordinates """
+    """Wrapper for grid_sample, uses pixel coordinates"""
     H, W = img.shape[-2:]
     xgrid, ygrid = coords.split([1, 1], dim=-1)
     xgrid = 2 * xgrid / (W - 1) - 1

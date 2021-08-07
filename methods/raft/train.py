@@ -1,11 +1,9 @@
 import torch
 from data.datamodule import RAFTDataModule
 from model import RAFT
-from pytorch_lightning import seed_everything
-from pytorch_lightning.loggers import WandbLogger
-from pytorch_lightning.utilities.cli import LightningArgumentParser, LightningCLI
-from pytorch_lightning.utilities import rank_zero_info
 from pretrained.convert import strip_module
+from pytorch_lightning.utilities import rank_zero_info
+from pytorch_lightning.utilities.cli import LightningArgumentParser, LightningCLI
 
 
 class RAFTCLI(LightningCLI):

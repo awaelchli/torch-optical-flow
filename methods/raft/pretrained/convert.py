@@ -1,5 +1,6 @@
+from typing import Any, Dict
+
 import torch
-from typing import Dict, Any
 
 
 def strip_module(state_dict: Dict[str, Any]) -> Dict[str, Any]:

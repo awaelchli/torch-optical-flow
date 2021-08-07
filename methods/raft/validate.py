@@ -1,10 +1,9 @@
-from jsonargparse import CLI
 import torch
-
 from data.datamodule import RAFTDataModule
+from jsonargparse import CLI
 from model import RAFT
-from pytorch_lightning import Trainer
 from pretrained.convert import strip_module
+from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import WandbLogger
 
 
