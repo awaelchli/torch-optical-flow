@@ -38,7 +38,6 @@ model:
   wdecay: 0.0001
   epsilon: 1.0e-08
 
-# batch size etc. is per GPU (DDP)
 data:
   stage: chairs
   image_size:
