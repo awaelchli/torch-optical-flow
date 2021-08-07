@@ -202,7 +202,7 @@ class RAFT(LightningModule):
         if self.datamodule is not None and self.datamodule.stage != "chairs":
             self.freeze_bn()
 
-    def optimizer_zero_grad(self, *args, optimizer, **kwargs):
+    def optimizer_zero_grad(self, epoch, batch_idx, optimizer, optimizer_idx):
         # setting grads to None gives a modest performance improvement
         optimizer.zero_grad(set_to_none=True)
 
