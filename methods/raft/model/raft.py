@@ -199,7 +199,7 @@ class RAFT(LightningModule):
 
     def on_validation_model_train(self):
         super().on_validation_model_train()
-        if self.datamodule is not None and self.datamodule.stage != "chairs":
+        if self.trainer.datamodule is not None and self.trainer.datamodule.stage != "chairs":
             self.freeze_bn()
 
     def optimizer_zero_grad(self, epoch, batch_idx, optimizer, optimizer_idx):
