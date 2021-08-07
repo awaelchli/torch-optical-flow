@@ -129,16 +129,14 @@ class RAFTDataModule(LightningDataModule):
         # TODO: validation for other stages
         #   implement validation_step accordingly
         if self.stage == "chairs":
-            val_dataset = FlyingChairs(split="validation", root=self.root_chairs)
+            dataset = FlyingChairs(split="validation", root=self.root_chairs)
         elif self.stage in ("things", "sintel"):
-            val_dataset = MpiSintel(
-                split="training", dstype="final", root=self.root_sintel
-            )
+            dataset = MpiSintel(split="training", dstype="final", root=self.root_sintel)
         elif self.stage == "kitti":
-            val_dataset = KITTI(split="training", root=self.root_kitti)
+            dataset = KITTI(split="training", root=self.root_kitti)
 
         dataloader = DataLoader(
-            val_dataset,
+            dataset,
             batch_size=1,
             shuffle=False,
             pin_memory=torch.cuda.is_available(),
