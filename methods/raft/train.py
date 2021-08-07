@@ -1,6 +1,6 @@
+from cli import RAFTCLI
 from data.datamodule import RAFTDataModule
 from model import RAFT
-from cli import RAFTCLI
 
 
 def main():

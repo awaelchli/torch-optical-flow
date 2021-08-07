@@ -1,10 +1,9 @@
+from cli import RAFTCLI
 from data.datamodule import RAFTDataModule
 from model import RAFT
-from cli import RAFTCLI
 
 
 class RAFTEvaluationCLI(RAFTCLI):
-
     def fit(self) -> None:
         self.trainer.validate(**self.fit_kwargs)
 

@@ -1,4 +1,4 @@
-from typing import Sequence, List, Union, Tuple
+from typing import List, Sequence, Tuple, Union
 
 import torch
 import torch.nn.functional as F
