@@ -7,6 +7,7 @@ from model.corr import CorrBlock
 from model.extractor import BasicEncoder
 from model.update import BasicUpdateBlock
 from model.utils import coords_grid, InputPadder, upflow8
+
 from pytorch_lightning import LightningModule
 from pytorch_lightning.loggers import WandbLogger
 from torch import Tensor
@@ -154,7 +155,7 @@ class RAFT(LightningModule):
         loss, metrics = sequence_loss(
             flow_predictions, flow, valid, gamma=self.hparams.gamma
         )
-        self.epe_train(flow_predictions[-1], flow)
+        self.epe_train(flow_predictions[-1], flow, valid)
 
         self.log("loss", loss)
         self.log("epe_train", self.epe_train)
@@ -184,7 +185,7 @@ class RAFT(LightningModule):
         _, flow_pr = self(img0, img1, iters=self.hparams.iters_val, test_mode=True)
         flow_pr = padder.unpad(flow_pr)
 
-        self.epe_val(flow_pr, flow_gt)
+        self.epe_val(flow_pr, flow_gt, valid)
         self.f1_val(flow_pr, flow_gt, valid)
         self.log("epe_val", self.epe_val)
         self.log("f1_val", self.f1_val)
