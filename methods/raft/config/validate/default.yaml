@@ -1,0 +1,13 @@
+seed_everything: 1234
+
+trainer:
+  gpus: 1
+  precision: 16
+
+data:
+  num_workers: 8
+  root_chairs: datasets/FlyingChairs/data
+  root_things: datasets/FlyingThings3D
+  root_sintel: datasets/MPI-Sintel
+  root_kitti: datasets/KITTI-Flow-2015
+  root_hd1k: datasets/HD1K

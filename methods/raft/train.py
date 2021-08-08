@@ -8,7 +8,7 @@ def main():
         RAFT,
         RAFTDataModule,
         description="Lightning RAFT Training",
-        parser_kwargs={"default_config_files": ["config/default.yaml"]},
+        parser_kwargs={"default_config_files": ["config/train/default.yaml"]},
         save_config_callback=None,
     )
 

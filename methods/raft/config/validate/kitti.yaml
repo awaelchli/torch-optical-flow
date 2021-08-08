@@ -1,0 +1,19 @@
+restore_weights: pretrained/checkpoints/raft-kitti.ckpt
+
+trainer:
+  logger:
+    class_path: pytorch_lightning.loggers.WandbLogger
+    init_args:
+      save_dir: ./logs
+      project: lightning-raft
+      name: raft-kitti
+  
+model:
+  hidden_dim: 128
+  context_dim: 128
+  corr_levels: 4
+  corr_radius: 4
+  iters_val: 32
+
+data:
+  stage: kitti
