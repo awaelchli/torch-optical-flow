@@ -28,7 +28,7 @@ class OutlierRatio(Metric):
         self, pred: Tensor, target: Tensor, valid: Optional[Tensor] = None
     ) -> None:
         epe = end_point_error(pred, target, dim=self.dim, reduce=False).view(-1)
-        mag = torch.norm(target ** 2, p=2, dim=self.dim).view(-1)
+        mag = torch.norm(target, p=2, dim=self.dim).view(-1)
 
         outliers = (
             (epe > self.abs_threshold) & ((epe / mag) > self.rel_threshold)
