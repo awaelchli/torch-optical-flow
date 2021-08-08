@@ -1,0 +1,9 @@
+# local ignore rules specific to this folder
+datasets/
+datasets
+logs/
+wandb/
+
+# checkpoint files
+*.pth
+*.ckpt

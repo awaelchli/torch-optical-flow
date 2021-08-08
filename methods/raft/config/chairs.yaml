@@ -1,0 +1,53 @@
+seed_everything: 1234
+
+trainer:
+  callbacks:
+    - class_path: pytorch_lightning.callbacks.ModelCheckpoint
+      init_args:
+        monitor: epe_val
+        mode: min
+        save_top_k: -1
+        save_last: true
+    - class_path: pytorch_lightning.callbacks.LearningRateMonitor
+      init_args:
+        logging_interval: step
+  logger:
+    class_path: pytorch_lightning.loggers.WandbLogger
+    init_args:
+      save_dir: ./logs
+      project: lightning-raft
+      name: raft-chairs
+  gradient_clip_val: 1.0
+  gradient_clip_algorithm: norm
+  gpus: 1
+  max_steps: 120000
+  val_check_interval: 1.0
+  num_sanity_val_steps: 0
+  log_every_n_steps: 50
+  precision: 16
+  
+model:
+  hidden_dim: 128
+  context_dim: 128
+  corr_levels: 4
+  corr_radius: 4
+  iters: 12
+  iters_val: 24
+  gamma: 0.8
+  dropout: 0.0
+  lr: 0.00025
+  wdecay: 0.0001
+  epsilon: 1.0e-08
+
+data:
+  stage: chairs
+  image_size:
+  - 368
+  - 496
+  batch_size: 8
+  num_workers: 8
+  root_chairs: datasets/FlyingChairs/data
+  root_things: datasets/FlyingThings3D
+  root_sintel: datasets/MPI-Sintel
+  root_kitti: datasets/KITTI-Flow-2015
+  root_hd1k: datasets/HD1K
