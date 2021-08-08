@@ -143,7 +143,6 @@ class RAFT(LightningModule):
         if test_mode:
             return coords1 - coords0, flow_up
 
-        flow_predictions = torch.stack(flow_predictions)
         return flow_predictions
 
     def training_step(
@@ -234,27 +233,25 @@ def sequence_loss(
     max_flow: float = 400.0,
 ) -> Tuple[Tensor, Dict[str, float]]:
     """Loss function defined over sequence of flow predictions"""
-    n_predictions = len(flow_preds)
+    n_predictions = len(flow_preds)    
+    flow_loss = 0.0
 
     # exclude invalid pixels and extremely large displacements
-    mag = torch.sum(flow_gt ** 2, dim=1).sqrt()
+    mag = torch.sum(flow_gt**2, dim=1).sqrt()
     valid = (valid >= 0.5) & (mag < max_flow)
 
-    idx = torch.arange(float(n_predictions), device=flow_gt.device)
+    for i in range(n_predictions):
+        i_weight = gamma**(n_predictions - i - 1)
+        i_loss = (flow_preds[i] - flow_gt).abs()
+        flow_loss += i_weight * (valid[:, None] * i_loss).mean()
 
-    # the weight for each element in the sequence
-    weight = gamma ** (n_predictions - idx - 1)
-
-    losses = valid[None, :, None] * (flow_preds - flow_gt[None]).abs()
-    flow_loss = torch.sum(weight * losses.flatten(1).mean(dim=1))
-
-    epe = torch.sum((flow_preds[-1] - flow_gt) ** 2, dim=1).sqrt()
+    epe = torch.sum((flow_preds[-1] - flow_gt)**2, dim=1).sqrt()
     epe = epe.view(-1)[valid.view(-1)]
 
     metrics = {
-        "1px": (epe < 1).float().mean().item(),
-        "3px": (epe < 3).float().mean().item(),
-        "5px": (epe < 5).float().mean().item(),
+        '1px': (epe < 1).float().mean().item(),
+        '3px': (epe < 3).float().mean().item(),
+        '5px': (epe < 5).float().mean().item(),
     }
 
     return flow_loss, metrics
