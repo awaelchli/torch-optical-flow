@@ -180,8 +180,8 @@ class RAFT(LightningModule):
     ) -> None:
         img0, img1, flow_gt, valid = batch
 
-        padder = InputPadder(img0.shape)
-        img0, img1 = padder.pad(img0, img1, mode=self.datamodule.stage)
+        padder = InputPadder(img0.shape, mode=self.trainer.datamodule.stage)
+        img0, img1 = padder.pad(img0, img1)
         _, flow_pr = self(img0, img1, iters=self.hparams.iters_val, test_mode=True)
         flow_pr = padder.unpad(flow_pr)
 
