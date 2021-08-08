@@ -15,7 +15,7 @@ from torch.optim.lr_scheduler import OneCycleLR
 from wandb import Image
 
 from optical_flow import flow2rgb
-from optical_flow.metrics import AverageEndPointError
+from optical_flow.metrics import AverageEndPointError, OutlierRatio
 
 
 class RAFT(LightningModule):
@@ -54,6 +54,7 @@ class RAFT(LightningModule):
         # metrics
         self.epe_train = AverageEndPointError()
         self.epe_val = AverageEndPointError()
+        self.f1_val = OutlierRatio(abs_threshold=3.0, rel_threshold=0.05)
 
     def freeze_bn(self) -> None:
         for m in self.modules():
@@ -176,7 +177,7 @@ class RAFT(LightningModule):
     def validation_step(
         self, batch: Tuple[Tensor, Tensor, Tensor, Tensor], batch_idx: int
     ) -> None:
-        img0, img1, flow_gt, _ = batch
+        img0, img1, flow_gt, valid = batch
 
         padder = InputPadder(img0.shape)
         img0, img1 = padder.pad(img0, img1, mode=self.datamodule.stage)
@@ -184,7 +185,9 @@ class RAFT(LightningModule):
         flow_pr = padder.unpad(flow_pr)
 
         self.epe_val(flow_pr, flow_gt)
+        self.f1_val(flow_pr, flow_gt, valid)
         self.log("epe_val", self.epe_val)
+        self.log("f1_val", self.f1_val)
 
     def configure_optimizers(self) -> Dict[str, Any]:
         optimizer = AdamW(
