@@ -233,25 +233,25 @@ def sequence_loss(
     max_flow: float = 400.0,
 ) -> Tuple[Tensor, Dict[str, float]]:
     """Loss function defined over sequence of flow predictions"""
-    n_predictions = len(flow_preds)    
+    n_predictions = len(flow_preds)
     flow_loss = 0.0
 
     # exclude invalid pixels and extremely large displacements
-    mag = torch.sum(flow_gt**2, dim=1).sqrt()
+    mag = torch.sum(flow_gt ** 2, dim=1).sqrt()
     valid = (valid >= 0.5) & (mag < max_flow)
 
     for i in range(n_predictions):
-        i_weight = gamma**(n_predictions - i - 1)
+        i_weight = gamma ** (n_predictions - i - 1)
         i_loss = (flow_preds[i] - flow_gt).abs()
         flow_loss += i_weight * (valid[:, None] * i_loss).mean()
 
-    epe = torch.sum((flow_preds[-1] - flow_gt)**2, dim=1).sqrt()
+    epe = torch.sum((flow_preds[-1] - flow_gt) ** 2, dim=1).sqrt()
     epe = epe.view(-1)[valid.view(-1)]
 
     metrics = {
-        '1px': (epe < 1).float().mean().item(),
-        '3px': (epe < 3).float().mean().item(),
-        '5px': (epe < 5).float().mean().item(),
+        "1px": (epe < 1).float().mean().item(),
+        "3px": (epe < 3).float().mean().item(),
+        "5px": (epe < 5).float().mean().item(),
     }
 
     return flow_loss, metrics
