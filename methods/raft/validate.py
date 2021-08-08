@@ -13,6 +13,7 @@ def main():
         RAFT,
         RAFTDataModule,
         description="Lightning RAFT Evaluation",
+        parser_kwargs={"default_config_files": ["config/default.yaml"]},
         save_config_callback=None,
     )
 
