@@ -26,6 +26,7 @@ class RAFT(LightningModule):
         corr_levels: int = 4,
         corr_radius: int = 4,
         iters: int = 12,
+        iters_val: int = 24,
         gamma: float = 0.8,
         dropout: float = 0.0,
         lr: float = 0.00002,
@@ -180,7 +181,7 @@ class RAFT(LightningModule):
 
         padder = InputPadder(img0.shape)
         img0, img1 = padder.pad(img0, img1)
-        _, flow_pr = self(img0, img1, iters=24, test_mode=True)
+        _, flow_pr = self(img0, img1, iters=self.hparams.iters_val, test_mode=True)
         flow_pr = padder.unpad(flow_pr)
 
         self.epe_val(flow_pr, flow_gt)
