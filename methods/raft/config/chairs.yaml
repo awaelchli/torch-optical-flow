@@ -49,5 +49,5 @@ data:
   root_chairs: datasets/FlyingChairs/data
   root_things: datasets/FlyingThings3D
   root_sintel: datasets/MPI-Sintel
-  root_kitti: datasets/KITTI
-  root_hd1k: datasets/HD1k
+  root_kitti: datasets/KITTI-Flow-2015
+  root_hd1k: datasets/HD1K
