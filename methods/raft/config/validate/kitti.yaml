@@ -13,7 +13,7 @@ model:
   context_dim: 128
   corr_levels: 4
   corr_radius: 4
-  iters_val: 32
+  iters_val: 24
 
 data:
   stage: kitti
