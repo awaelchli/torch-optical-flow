@@ -8,6 +8,7 @@ trainer:
       project: lightning-raft
       name: raft-kitti
   max_steps: 50000
+  check_val_every_n_epoch: 100
   
 model:
   hidden_dim: 128
