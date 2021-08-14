@@ -2,16 +2,22 @@ from typing import Optional
 
 import torch
 from torch import Tensor
+from torchmetrics import Metric
 
 from optical_flow.metrics.epe import end_point_error
-from torchmetrics import Metric
 
 
 class OutlierRatio(Metric):
     """Outlier ratio, also known as F1.
 
-    Measures the ratio of pixels that have an end-point-error greater than the given absolute threshold or
-    have a relative error greater than the given relative threshold.
+    Measures the ratio of pixels that have an end-point-error greater than the given absolute threshold *and*
+    have a relative error greater than the given relative threshold. The pixels that satisfy both these conditions
+    are considered outliers.
+
+    Args:
+        dim: the dimension along which to compute the end-point-error (Euclidean distance)
+        abs_threshold: the threshold of absolute error above which a pixel is considered an outlier
+        rel_threshold: the threshold of relative error above which a pixel is considered an outlier
     """
 
     def __init__(

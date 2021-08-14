@@ -9,11 +9,19 @@ from torch import Tensor
 
 
 def read_pfm(file: Union[str, Path]) -> Tensor:
-    """PFM format used by FlyingThings3D
+    """Read optical flow file in PFM format used by FlyingThings3D.
 
-    Code adapted from
-    https://github.com/liruoteng/OpticalFlowToolkit/blob/master/lib/pfm.py
+    Args:
+        file: path to a file to read the contents from
 
+    Returns:
+        Optical flow in a torch tensor of shape (2, H, W).
+
+    Raises:
+        RuntimeError: If the file contains single-channel data only, is not a PFM file, or has a malformed PFM header.
+
+    References:
+        Code adapted from https://github.com/liruoteng/OpticalFlowToolkit/blob/master/lib/pfm.py
     """
 
     file = open(file, "rb")
@@ -43,13 +51,15 @@ def read_pfm(file: Union[str, Path]) -> Tensor:
 
 
 def write_pfm(file: Union[str, Path], flow: Union[Tensor, np.ndarray]) -> None:
-    """PFM format used by FlyingThings3D
+    """Write optical flow to a file in PFM format used by FlyingThings3D.
 
-    Code adapted from
-    https://github.com/liruoteng/OpticalFlowToolkit/blob/master/lib/pfm.py
+    Args:
+        file: a file path to where the contents will be written
+        flow: the optical flow array or tensor of shape (2, H, W)
+
+    References:
+        Code adapted from: https://github.com/liruoteng/OpticalFlowToolkit/blob/master/lib/pfm.py
     """
-    # flow: (2, H, W)
-
     if isinstance(flow, Tensor):
         flow = flow.cpu().numpy()
 

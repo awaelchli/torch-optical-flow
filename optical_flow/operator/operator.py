@@ -12,9 +12,19 @@ def warp(
     padding_mode: str = "border",
     align_corners: bool = False,
 ) -> Tensor:
-    """ Inverse warping with optical flow. """
-    # frame: (B, C, H, W)
-    # flow: (B, 2, H, W)
+    """Inverse warping with optical flow.
+
+    Args:
+        frame: the image tensor of shape (B, C, H, W)
+        flow: the optical flow tensor of shape (B, 2, H, W)
+        mode: the name of the interpolation method, see :func:`~torch.nn.functional.grid_sample` for more information
+        padding_mode: the padding mode, see :func:`~torch.nn.functional.grid_sample` for more information
+        align_corners: whether to align the corners of the sampling grid, see :func:`~torch.nn.functional.grid_sample`
+            for more information
+
+    Returns:
+        The warped image
+    """
     flow = flow.permute(0, 2, 3, 1)  # swap flow dimensions (as expected by grid_sample)
     grid = warp_grid(flow)
     warped = F.grid_sample(
@@ -24,7 +34,17 @@ def warp(
 
 
 def warp_grid(flow: Tensor) -> Tensor:
-    # flow: (B, H, W, 2)
+    """Creates a warping grid from a given optical flow map.
+
+    The warping grid determines the coordinates of the source pixels from which to take the color when inverse warping.
+
+    Args:
+        flow: optical flow tensor of shape (B, H, W, 2). The flow values are expected to already be in normalized range,
+            see :func:`normalize` for more information.
+
+    Returns:
+        The warping grid
+    """
     b, h, w, _ = flow.shape
     range_x = torch.linspace(-1.0, 1.0, w, device=flow.device)
     range_y = torch.linspace(-1.0, 1.0, h, device=flow.device)
@@ -36,11 +56,19 @@ def warp_grid(flow: Tensor) -> Tensor:
     return grid
 
 
-def scale(flow: Tensor, factor: Union[float, Tuple[float, float]] = 1) -> Tensor:
+def scale(flow: Tensor, factor: Union[float, Tuple[float, float]] = 1.0) -> Tensor:
     """Scales the optical flow by a constant in X- and Y-direction.
-    It is assumed that the flow map has a shape (B, 2, H, W), where B is the batch size.
+
     The first column of this tensor is the X-component and will be multiplied with factor[0].
     The second column is the Y-component of the optical flow and will be multiplied with factor[1].
+
+    Args:
+        flow: optical flow tensor of shape (B, 2, H, W)
+        factor: the scaling factor, either a single value for both dimensions or a tuple with individual scales for
+            the X- and Y components
+
+    Returns:
+        The the optical flow map scaled in magnitude, of the same shape as the input flow tensor.
     """
     # flow: (B, 2, H, W)
     assert flow.size(1) == 2
@@ -60,7 +88,20 @@ def resize(
     scale_factor: Optional[float] = None,
     mode: str = "bilinear",
 ) -> Tensor:
-    """ Resizes the optical flow in spatial dimensions and also multiplies the flow vectors by the scale factor. """
+    """Resizes the optical flow in spatial dimensions and also re-scales the optical flow to account for the change in
+    spatial coordinates.
+
+    Args:
+        flow: the optical flow tensor of shape (B, 2, H, W)
+        size: the new spatial dimensions to resize the optical flow map to. Mutually exclusive with the `scale_factor`
+            argument. The scale factor will be determined based on the given dimensions.
+        scale_factor: the scaling factor for the spatial resizing and for the re-scaling of the optical flow magnitude.
+            Mutually exclusive with the `size` argument.
+        mode: the name of the interpolation method, see :func:`~torch.nn.functional.interpolate` for more information
+
+    Returns:
+        The resized optical flow tensor of shape (B, 2, H', W') with H' and W' being the new spatial dimensions.
+    """
     assert flow.size(1) == 2
     assert flow.ndimension() == 4
     b, _, h, w = flow.shape
@@ -74,7 +115,15 @@ def resize(
 
 
 def normalize(flow: Tensor) -> Tensor:
-    """ Normalizes the flow vectors in the range [-h, h] and [-w, w] to the range [-1, 1]. """
+    """Re-scales the optical flow vectors such that they correspond to motion on the normalized pixel coordinates
+    in the range [-1, 1] x [-1, 1].
+
+    Args:
+        flow: the optical flow tensor of shape (B, 2, H, W)
+
+    Returns:
+        The optical flow tensor with flow vectors rescaled to the normalized pixel coordinate system.
+    """
     # flow: (B, 2, H, W)
     assert flow.size(1) == 2
     h, w = flow.shape[-2:]
@@ -82,8 +131,14 @@ def normalize(flow: Tensor) -> Tensor:
 
 
 def denormalize(flow: Tensor) -> Tensor:
-    """Inverts the normalization of the flow vectors in range [-1, 1]
-    and brings it back to the ranges [-h, h] and [-w, w] for x- and y-components respectively.
+    """Re-scales the optical flow vectors such that they correspond to motion on the regular integer pixel coordinates
+    in the range [-h, h] x [-w, w].
+
+    Args:
+        flow: the optical flow tensor of shape (B, 2, H, W)
+
+    Returns:
+        The optical flow tensor with flow vectors rescaled to the regular integer pixel coordinate system.
     """
     # flow: (B, 2, H, W)
     assert flow.size(1) == 2
@@ -92,6 +147,15 @@ def denormalize(flow: Tensor) -> Tensor:
 
 
 def integrate(*flows: Tensor) -> Tensor:
+    """Integrate a sequence of optical flow maps to a single optical flow map that describes the combined motion from
+    the first to the last coordinate frame.
+
+    Args:
+        *flows: the sequence of optical flow maps, all with the same shape (B, 2, H, W)
+
+    Returns:
+        The integration of optical flow over the whole sequence
+    """
     # flows: (B, 2, H, W)
     assert len(flows) >= 2
     total = flows[-1]
