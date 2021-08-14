@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union
+from typing import Union, Any
 
 from torch import Tensor
 
@@ -10,7 +10,7 @@ from optical_flow.io.pfm import read_pfm, write_pfm
 FORMATS = ["kitti", "middlebury", "pfm"]
 
 
-def read(file: Union[str, Path], fmt="middlebury") -> Tensor:
+def read(file: Union[str, Path], fmt="middlebury", **kwargs: Any) -> Union[Tensor, Any]:
     """Read optical flow data from a file.
 
     Supported are several common formats used to store optical flow data:
@@ -22,6 +22,8 @@ def read(file: Union[str, Path], fmt="middlebury") -> Tensor:
     Args:
         file: path to a file to read the contents from
         fmt: name of the format in which optical flow is stored
+        **kwargs: format-specific keyword arguments, which get passed down to the specific loading function if they
+            support it
 
     Returns:
         Optical flow in a torch tensor of shape (2, H, W).
@@ -30,14 +32,14 @@ def read(file: Union[str, Path], fmt="middlebury") -> Tensor:
         ValueError: If the given format string is not among the supported choices: kitti, middlebury, pfm.
     """
     if fmt == "kitti":
-        flow = read_kitti(file)
+        output = read_kitti(file, **kwargs)
     elif fmt == "middlebury":
-        flow = read_middleburry(file)
+        output = read_middleburry(file)
     elif fmt == "pfm":
-        flow = read_pfm(file)
+        output = read_pfm(file)
     else:
         raise ValueError(f"Unknown format: {fmt}.")
-    return flow
+    return output
 
 
 def write(file: Union[str, Path], flow: Tensor, fmt="middlebury") -> None:
