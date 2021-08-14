@@ -40,7 +40,7 @@ import torch
 import torch.utils.data as data
 from data import frame_utils_new as frame_utils
 from data.augmentor import FlowAugmentor, SparseFlowAugmentor
-
+from PIL import Image
 import optical_flow
 
 
@@ -63,8 +63,8 @@ class FlowDataset(data.Dataset):
     def __getitem__(self, index):
 
         if self.is_test:
-            img1 = frame_utils.read_gen(self.image_list[index][0])
-            img2 = frame_utils.read_gen(self.image_list[index][1])
+            img1 = read_gen(self.image_list[index][0])
+            img2 = read_gen(self.image_list[index][1])
             img1 = np.array(img1).astype(np.uint8)[..., :3]
             img2 = np.array(img2).astype(np.uint8)[..., :3]
             img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
@@ -87,10 +87,10 @@ class FlowDataset(data.Dataset):
             )
             valid = valid.numpy()
         else:
-            flow = frame_utils.read_gen(self.flow_list[index])
+            flow = read_gen(self.flow_list[index])
 
-        img1 = frame_utils.read_gen(self.image_list[index][0])
-        img2 = frame_utils.read_gen(self.image_list[index][1])
+        img1 = read_gen(self.image_list[index][0])
+        img2 = read_gen(self.image_list[index][1])
 
         flow = flow.permute(1, 2, 0).numpy()
         img1 = np.array(img1).astype(np.uint8)
@@ -241,3 +241,14 @@ class HD1K(FlowDataset):
                 self.image_list += [[images[i], images[i + 1]]]
 
             seq_ix += 1
+
+
+def read_gen(file_name):
+    ext = os.path.splitext(file_name)[-1]
+    if ext == ".png" or ext == ".jpeg" or ext == ".ppm" or ext == ".jpg":
+        return Image.open(file_name)
+    elif ext == ".flo":
+        return optical_flow.read(file_name, fmt="middlebury")
+    elif ext == ".pfm":
+        return optical_flow.read(file_name, fmt="pfm")
+    return []
