@@ -31,16 +31,15 @@
 # Data loading based on https://github.com/NVIDIA/flownet2-pytorch
 
 import os
-import os.path as osp
 import random
 from glob import glob
 
 import numpy as np
 import torch
 import torch.utils.data as data
-from data import frame_utils_new as frame_utils
 from data.augmentor import FlowAugmentor, SparseFlowAugmentor
 from PIL import Image
+
 import optical_flow
 
 
@@ -135,20 +134,20 @@ class MpiSintel(FlowDataset):
         self, aug_params=None, split="training", root="datasets/Sintel", dstype="clean"
     ):
         super(MpiSintel, self).__init__(aug_params)
-        flow_root = osp.join(root, split, "flow")
-        image_root = osp.join(root, split, dstype)
+        flow_root = os.path.join(root, split, "flow")
+        image_root = os.path.join(root, split, dstype)
 
         if split == "test":
             self.is_test = True
 
         for scene in os.listdir(image_root):
-            image_list = sorted(glob(osp.join(image_root, scene, "*.png")))
+            image_list = sorted(glob(os.path.join(image_root, scene, "*.png")))
             for i in range(len(image_list) - 1):
                 self.image_list += [[image_list[i], image_list[i + 1]]]
                 self.extra_info += [(scene, i)]  # scene and frame_id
 
             if split != "test":
-                self.flow_list += sorted(glob(osp.join(flow_root, scene, "*.flo")))
+                self.flow_list += sorted(glob(os.path.join(flow_root, scene, "*.flo")))
 
 
 class FlyingChairs(FlowDataset):
@@ -160,11 +159,13 @@ class FlyingChairs(FlowDataset):
     ):
         super(FlyingChairs, self).__init__(aug_params)
 
-        images = sorted(glob(osp.join(root, "*.ppm")))
-        flows = sorted(glob(osp.join(root, "*.flo")))
+        images = sorted(glob(os.path.join(root, "*.ppm")))
+        flows = sorted(glob(os.path.join(root, "*.flo")))
         assert len(images) // 2 == len(flows)
 
-        split_file = osp.join(osp.dirname(osp.abspath(__file__)), "chairs_split.txt")
+        split_file = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "chairs_split.txt"
+        )
         split_list = np.loadtxt(split_file, dtype=np.int32)
         for i in range(len(flows)):
             xid = split_list[i]
@@ -183,15 +184,15 @@ class FlyingThings3D(FlowDataset):
 
         for cam in ["left"]:
             for direction in ["into_future", "into_past"]:
-                image_dirs = sorted(glob(osp.join(root, dstype, "TRAIN/*/*")))
-                image_dirs = sorted([osp.join(f, cam) for f in image_dirs])
+                image_dirs = sorted(glob(os.path.join(root, dstype, "TRAIN/*/*")))
+                image_dirs = sorted([os.path.join(f, cam) for f in image_dirs])
 
-                flow_dirs = sorted(glob(osp.join(root, "optical_flow/TRAIN/*/*")))
-                flow_dirs = sorted([osp.join(f, direction, cam) for f in flow_dirs])
+                flow_dirs = sorted(glob(os.path.join(root, "optical_flow/TRAIN/*/*")))
+                flow_dirs = sorted([os.path.join(f, direction, cam) for f in flow_dirs])
 
                 for idir, fdir in zip(image_dirs, flow_dirs):
-                    images = sorted(glob(osp.join(idir, "*.png")))
-                    flows = sorted(glob(osp.join(fdir, "*.pfm")))
+                    images = sorted(glob(os.path.join(idir, "*.png")))
+                    flows = sorted(glob(os.path.join(fdir, "*.pfm")))
                     for i in range(len(flows) - 1):
                         if direction == "into_future":
                             self.image_list += [[images[i], images[i + 1]]]
@@ -207,9 +208,9 @@ class KITTI(FlowDataset):
         if split == "testing":
             self.is_test = True
 
-        root = osp.join(root, split)
-        images1 = sorted(glob(osp.join(root, "image_2/*_10.png")))
-        images2 = sorted(glob(osp.join(root, "image_2/*_11.png")))
+        root = os.path.join(root, split)
+        images1 = sorted(glob(os.path.join(root, "image_2/*_10.png")))
+        images2 = sorted(glob(os.path.join(root, "image_2/*_11.png")))
 
         for img1, img2 in zip(images1, images2):
             frame_id = img1.split("/")[-1]
@@ -217,7 +218,7 @@ class KITTI(FlowDataset):
             self.image_list += [[img1, img2]]
 
         if split == "training":
-            self.flow_list = sorted(glob(osp.join(root, "flow_occ/*_10.png")))
+            self.flow_list = sorted(glob(os.path.join(root, "flow_occ/*_10.png")))
 
 
 class HD1K(FlowDataset):

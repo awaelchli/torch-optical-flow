@@ -1,18 +1,16 @@
 import random
 
+import cv2
+import numpy as np
 import numpy.random
 import pytest
 import torch
 
-from methods.raft.data.dataset import MpiSintel, FlyingChairs, FlyingThings3D, KITTI
-from methods.raft.data.dataset_new import MpiSintel as MpiSintelNew
+from methods.raft.data.dataset import FlyingChairs, FlyingThings3D, KITTI, MpiSintel
 from methods.raft.data.dataset_new import FlyingChairs as FlyingChairsNew
 from methods.raft.data.dataset_new import FlyingThings3D as FlyingThings3DNew
 from methods.raft.data.dataset_new import KITTI as KITTINew
-import cv2
-
-import numpy as np
-
+from methods.raft.data.dataset_new import MpiSintel as MpiSintelNew
 
 ROOT_SINTEL = "/Volumes/Archive/Datasets/MPI-Sintel"
 ROOT_CHAIRS = "/Volumes/Archive/Datasets/FlyingChairs/data"
