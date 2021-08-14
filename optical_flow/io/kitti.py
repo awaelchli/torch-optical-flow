@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union
+from typing import Union, Tuple
 
 import numpy as np
 import torch
@@ -19,14 +19,17 @@ def _check_cv2_available():
         )
 
 
-def read_kitti(file: Union[str, Path]) -> Tensor:
+def read_kitti(
+    file: Union[str, Path], mask: bool = False
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Read optical flow file in KITTI [1] format.
 
     Args:
         file: path to a file to read the contents from
+        mask: whether to return the mask for sparse flow
 
     Returns:
-        Optical flow in a torch tensor of shape (2, H, W).
+        Optical flow in a torch tensor of shape (2, H, W), and optionally a mask of shape (H, W) if `mask=True`.
 
     Raises:
         ModuleNotFoundError: If the opencv-python package is not installed.
@@ -37,9 +40,12 @@ def read_kitti(file: Union[str, Path]) -> Tensor:
     _check_cv2_available()
     flow = cv2.imread(str(file), cv2.IMREAD_ANYDEPTH | cv2.IMREAD_COLOR)
     flow = flow[:, :, ::-1].astype(np.float32)
-    flow = flow[:, :, :2]
+    flow, valid = flow[:, :, :2], flow[:, :, 2]
     flow = (flow - 2 ** 15) / 64.0
     flow = torch.tensor(flow).permute(2, 0, 1)
+    valid = torch.tensor(valid)
+    if mask:
+        return flow, valid
     return flow
 
 
