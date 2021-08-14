@@ -1,21 +1,23 @@
+# Copyright (C) 2017-2019, Arraiy, Inc., all rights reserved.
+# Copyright (C) 2019-    , Kornia authors, all rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import torch
 from torch import Tensor
 
 
 def hsv_to_rgb(image: Tensor) -> Tensor:
-    r"""
-    Convert an HSV image to RGB.
-    The image data is assumed to be in the range of (0, 1).
-    The code was taken and adapted from Kornia.
-    See: https://github.com/kornia/kornia
-
-    Args:
-        image: RGB image to be converted to HSV.
-
-    Returns:
-        HSV version of the image.
-    """
-
     assert torch.is_tensor(image)
 
     if len(image.shape) < 3 or image.shape[-3] != 3:

@@ -32,6 +32,16 @@ class RAFTDataModule(LightningDataModule):
         if self.stage not in ("chairs", "things", "sintel", "kitti"):
             raise ValueError(f"Unknown stage name: {self.stage}")
 
+    @property
+    def val_dataset_name(self) -> str:
+        stage2dataset = {
+            "chairs": "chairs",
+            "things": "sintel",
+            "sintel": "sintel",
+            "kitti": "kitti",
+        }
+        return stage2dataset[self.stage]
+
     def train_dataloader(self) -> DataLoader:
         train_ds = "C+T+K+S+H"
 

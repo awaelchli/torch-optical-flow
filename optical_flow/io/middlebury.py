@@ -9,13 +9,23 @@ MAGIC_NUMBER = 202021.25
 
 
 def read_middleburry(file: Union[str, Path]) -> Tensor:
-    """Read .flo file in Middlebury format
+    """Read optical flow file in Middlebury format [1].
+
+    Args:
+        file: path to a file to read the contents from
+
+    Returns:
+        Optical flow in a torch tensor of shape (2, H, W).
 
     Warning:
         This will work on little-endian architectures (eg Intel x86) only!
 
-    Code adapted from:
-    # http://stackoverflow.com/questions/28013200/reading-middlebury-flow-files-with-python-bytes-array-numpy
+    Note:
+        Code adapted from: http://stackoverflow.com/questions/28013200/reading-middlebury-flow-files-with-python-bytes-array-numpy
+
+    References:
+        [1] S. Baker, D. Scharstein, JP Lewis, S. Roth, M. Black, R. Szeliski, "A Database and Evaluation
+            Methodology for Optical Flow", IJCV 2011.
     """
     with open(file, "rb") as f:
         magic = np.fromfile(f, np.float32, count=1)
@@ -32,12 +42,15 @@ def read_middleburry(file: Union[str, Path]) -> Tensor:
 
 def write_middlebury(file: Union[str, Path], flow: Union[Tensor, np.ndarray]) -> None:
     """
-    Write optical flow to file in Middlebury format.
-    Original code by Deqing Sun, adapted from Daniel Scharstein.
+    Write optical flow to a file in Middlebury format [1].
 
     Args:
-        file:
-        flow
+        file: a file path to where the contents will be written
+        flow: the optical flow array or tensor of shape (2, H, W)
+
+    References:
+        [1] S. Baker, D. Scharstein, JP Lewis, S. Roth, M. Black, R. Szeliski, "A Database and Evaluation
+            Methodology for Optical Flow", IJCV 2011.
     """
     if isinstance(flow, Tensor):
         flow = flow.cpu().numpy()

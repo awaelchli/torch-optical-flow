@@ -6,11 +6,7 @@ import torch
 from PIL import Image
 from torch import Tensor
 
-from optical_flow.visualization.methods import (
-    flow2rgb_baker,
-    flow2rgb_hsv,
-    flow2rgb_meister,
-)
+from optical_flow.visualization.methods import flow2rgb_baker, flow2rgb_hsv, flow2rgb_meister
 
 EPS = 1e-5
 METHODS = [
@@ -27,20 +23,26 @@ def flow2rgb(
     max_norm: Optional[float] = None,
     invert_y: bool = False,
 ) -> Tensor:
-    """
+    """Convert an optical flow field to a colored representation in form of an RGB image.
+
+    Supports several common visualization methods: baker, hsv, meister
+
     Args:
-        flow:
-        method:
-        clip:
-        max_norm: The maximum norm of optical flow to be clipped. Default: 1.
-            The optical flows that have a norm greater than max_value will be clipped for visualization.
-        invert_y: Default: True. By default the optical flow is expected to be in a coordinate system with the
-            Y axis pointing downwards. For intuitive visualization, the Y-axis is inverted.
+        flow: the optical flow tensor of shape (2, H, W) or (B, 2, H, W)
+        method: the name of the visualization method, one of: baker, hsv, meister
+        clip: value for clipping the optical flow values. Applies before normalization with `max_norm`.
+        max_norm: the maximum norm of optical flow to be clipped.
+            The optical flows that have a norm greater than `max_norm` will be clipped for visualization.
+        invert_y: by default the optical flow is expected to be in a coordinate system with the
+            Y-axis pointing downwards. For intuitive visualization, the Y-axis is inverted.
 
     Returns:
+        RGB image of shape (3, H, W) or (B, 3, H, W)
 
+    Raises:
+        ValueError: If the given name for the visualization method is not among the supported choices: baker, hsv,
+            baker.
     """
-    # flow: (B, 2, H, W)
     if isinstance(flow, np.ndarray):
         flow = torch.as_tensor(flow)
     ndims = flow.ndimension()
@@ -64,7 +66,7 @@ def flow2rgb(
     elif method == "meister":
         rgb = flow2rgb_meister(flow)
     else:
-        raise ValueError(f"Unknown method '{method}'.")
+        raise ValueError(f"Unknown method: '{method}'.")
 
     if ndims == 3:
         rgb = rgb.view(*rgb.shape[-3:])
@@ -72,8 +74,22 @@ def flow2rgb(
 
 
 def colorwheel(
-    method: str = "baker", size: int = 256, file: Optional[Union[str, Path]] = None
-):
+    method: str = "baker",
+    size: int = 256,
+    file: Optional[Union[str, Path]] = None,
+) -> Tensor:
+    """Renders an RGB colorwheel image for a given optical flow visualization method.
+
+    Supports several common visualization methods: baker, hsv, meister
+
+    Args:
+        method: the name of the visualization method, one of: baker, hsv, meister
+        size: the desired height of the output image in pixels
+        file: optional file path to save the image to
+
+    Returns:
+        Square RGB image tensor of shape (3, H, H) where H is the given size argument
+    """
     h = w = size
     max_norm = size / 2
     dy, dx = torch.meshgrid(

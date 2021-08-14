@@ -7,7 +7,6 @@ from model.corr import CorrBlock
 from model.extractor import BasicEncoder
 from model.update import BasicUpdateBlock
 from model.utils import coords_grid, InputPadder, upflow8
-
 from pytorch_lightning import LightningModule
 from pytorch_lightning.loggers import WandbLogger
 from torch import Tensor
