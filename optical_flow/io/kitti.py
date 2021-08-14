@@ -20,7 +20,7 @@ def _check_cv2_available():
 
 
 def read_kitti(file: Union[str, Path]) -> Tensor:
-    """Read optical flow file in KITTI format.
+    """Read optical flow file in KITTI [1] format.
 
     Args:
         file: path to a file to read the contents from
@@ -30,6 +30,9 @@ def read_kitti(file: Union[str, Path]) -> Tensor:
 
     Raises:
         ModuleNotFoundError: If the opencv-python package is not installed.
+
+    References:
+        [1] Moritz Menze and Andreas Geiger, "Object Scene Flow for Autonomous Vehicles", CVPR, 2015.
     """
     _check_cv2_available()
     flow = cv2.imread(str(file), cv2.IMREAD_ANYDEPTH | cv2.IMREAD_COLOR)
@@ -41,7 +44,7 @@ def read_kitti(file: Union[str, Path]) -> Tensor:
 
 
 def write_kitti(file: Union[str, Path], flow: Union[Tensor, np.ndarray]) -> None:
-    """Write optical flow to a file in KITTI format.
+    """Write optical flow to a file in KITTI [1] format.
 
     Args:
         file: a file path to where the contents will be written
@@ -49,6 +52,9 @@ def write_kitti(file: Union[str, Path], flow: Union[Tensor, np.ndarray]) -> None
 
     Raises:
         ModuleNotFoundError: If the opencv-python package is not installed.
+
+    References:
+        [1] Moritz Menze and Andreas Geiger, "Object Scene Flow for Autonomous Vehicles", CVPR, 2015.
     """
     _check_cv2_available()
     if isinstance(flow, Tensor):

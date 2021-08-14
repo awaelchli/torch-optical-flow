@@ -1,3 +1,26 @@
+# MIT License
+#
+# Copyright (c) 2019 LI RUOTENG
+# Copyright (c) 2021 Adrian Wälchli
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import re
 import sys
 from pathlib import Path
@@ -9,7 +32,7 @@ from torch import Tensor
 
 
 def read_pfm(file: Union[str, Path]) -> Tensor:
-    """Read optical flow file in PFM format used by FlyingThings3D.
+    """Read optical flow file in PFM format used by the datasets from Uni Freiburg [1].
 
     Args:
         file: path to a file to read the contents from
@@ -20,8 +43,14 @@ def read_pfm(file: Union[str, Path]) -> Tensor:
     Raises:
         RuntimeError: If the file contains single-channel data only, is not a PFM file, or has a malformed PFM header.
 
+    Note:
+         Code adapted from Ruoteng Li [2].
+
     References:
-        Code adapted from https://github.com/liruoteng/OpticalFlowToolkit/blob/master/lib/pfm.py
+        [1] N. Mayer, E. Ilg, P. Häusser, P. Fischer, D. Cremers, A. Dosovitskiy, T. Brox,
+            "A Large Dataset to Train Convolutional Networks for Disparity, Optical Flow, and Scene Flow Estimation",
+            CVPR, 2016.
+        [2] Ruoteng Li, "Optical Flow Toolkit", 2016. URL: https://github.com/liruoteng/OpticalFlowToolkit
     """
 
     file = open(file, "rb")
@@ -51,14 +80,17 @@ def read_pfm(file: Union[str, Path]) -> Tensor:
 
 
 def write_pfm(file: Union[str, Path], flow: Union[Tensor, np.ndarray]) -> None:
-    """Write optical flow to a file in PFM format used by FlyingThings3D.
+    """Write optical flow to a file in PFM format used by the datasets from Uni Freiburg [1].
 
     Args:
         file: a file path to where the contents will be written
         flow: the optical flow array or tensor of shape (2, H, W)
 
     References:
-        Code adapted from: https://github.com/liruoteng/OpticalFlowToolkit/blob/master/lib/pfm.py
+        [1] N. Mayer, E. Ilg, P. Häusser, P. Fischer, D. Cremers, A. Dosovitskiy, T. Brox,
+            "A Large Dataset to Train Convolutional Networks for Disparity, Optical Flow, and Scene Flow Estimation",
+            CVPR, 2016.
+        [2] Ruoteng Li, "Optical Flow Toolkit", 2016. URL: https://github.com/liruoteng/OpticalFlowToolkit
     """
     if isinstance(flow, Tensor):
         flow = flow.cpu().numpy()
