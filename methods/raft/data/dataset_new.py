@@ -36,14 +36,14 @@ from glob import glob
 
 import numpy as np
 import torch
-import torch.utils.data as data
+from torch.utils.data import Dataset
 from data.augmentor import FlowAugmentor, SparseFlowAugmentor
 from PIL import Image
 
 import optical_flow
 
 
-class FlowDataset(data.Dataset):
+class FlowDataset(Dataset):
     def __init__(self, aug_params=None, sparse=False):
         self.augmentor = None
         self.sparse = sparse
