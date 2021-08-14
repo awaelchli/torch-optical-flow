@@ -36,9 +36,9 @@ from glob import glob
 
 import numpy as np
 import torch
-from torch.utils.data import Dataset
 from data.augmentor import FlowAugmentor, SparseFlowAugmentor
 from PIL import Image
+from torch.utils.data import Dataset
 
 import optical_flow
 
