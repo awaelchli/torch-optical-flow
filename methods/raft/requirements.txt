@@ -2,5 +2,5 @@ torch
 torchmetrics>=0.4.1
 pytorch-lightning>=1.4.0
 opencv-python-headless
-jsonargparse
+jsonargparse[signatures]
 wandb
