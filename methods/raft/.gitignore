@@ -7,3 +7,8 @@ wandb/
 # checkpoint files
 *.pth
 *.ckpt
+
+# data and predictions
+*.flo
+*.png
+*.jpg
