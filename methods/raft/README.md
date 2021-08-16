@@ -1,5 +1,7 @@
 # RAFT: Recurrent All Pairs Field Transforms for Optical Flow
 
+![Teaser Image](https://torch-optical-flow.s3.eu-central-1.amazonaws.com/teaser-raft-kitti.jpg)
+
 This folder contains an (inofficial) implementation of the paper
 
 [RAFT: Recurrent All Pairs Field Transforms for Optical Flow](https://arxiv.org/pdf/2003.12039.pdf)<br/>
