@@ -47,6 +47,7 @@ def flow2rgb_baker(flow: Tensor) -> Tensor:
         [1] S. Baker, D. Scharstein, J. Lewis, S. Roth, M. J. Black, and R. Szeliski,
             "A Database and Evaluation Methodology for Optical Flow", ICCV, 2007.
             URL: http://vision.middlebury.edu/flow/flowEval-iccv07.pdf
+
         [2] Tom Runia, "Flow-vis: Optical Flow Visualization", 2020, URL: https://pypi.org/project/flow-vis
     """
     b, _, h, w = flow.shape
@@ -92,6 +93,7 @@ def colorwheel_baker(device: Optional[torch.device] = None) -> Tensor:
         [1] S. Baker, D. Scharstein, J. Lewis, S. Roth, M. J. Black, and R. Szeliski,
             "A Database and Evaluation Methodology for Optical Flow", ICCV, 2007.
             URL: http://vision.middlebury.edu/flow/flowEval-iccv07.pdf
+
         [2] Tom Runia, "Flow-vis: Optical Flow Visualization", 2020, URL: https://pypi.org/project/flow-vis
     """
 

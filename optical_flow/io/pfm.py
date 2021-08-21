@@ -44,12 +44,13 @@ def read_pfm(file: Union[str, Path]) -> Tensor:
         RuntimeError: If the file contains single-channel data only, is not a PFM file, or has a malformed PFM header.
 
     Note:
-         Code adapted from Ruoteng Li [2].
+        Code adapted from Ruoteng Li [2].
 
     References:
         [1] N. Mayer, E. Ilg, P. Häusser, P. Fischer, D. Cremers, A. Dosovitskiy, T. Brox,
             "A Large Dataset to Train Convolutional Networks for Disparity, Optical Flow, and Scene Flow Estimation",
             CVPR, 2016.
+
         [2] Ruoteng Li, "Optical Flow Toolkit", 2016. URL: https://github.com/liruoteng/OpticalFlowToolkit
     """
 
@@ -90,6 +91,7 @@ def write_pfm(file: Union[str, Path], flow: Union[Tensor, np.ndarray]) -> None:
         [1] N. Mayer, E. Ilg, P. Häusser, P. Fischer, D. Cremers, A. Dosovitskiy, T. Brox,
             "A Large Dataset to Train Convolutional Networks for Disparity, Optical Flow, and Scene Flow Estimation",
             CVPR, 2016.
+
         [2] Ruoteng Li, "Optical Flow Toolkit", 2016. URL: https://github.com/liruoteng/OpticalFlowToolkit
     """
     if isinstance(flow, Tensor):
