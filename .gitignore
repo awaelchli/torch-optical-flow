@@ -133,6 +133,8 @@ dmypy.json
 
 # Project Folders
 scratch/
+docs/source/build
+docs/source/_build
 
 # Lightning logs and checkpoints
 lightning_logs/
